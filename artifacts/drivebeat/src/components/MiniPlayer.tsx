@@ -20,10 +20,10 @@ interface MiniPlayerProps {
   controls: PlayerControls;
 }
 
-const SPEED_STEP = 0.1;
+const SPEED_STEP = 0.25;
 
 export function MiniPlayer({ state, controls }: MiniPlayerProps) {
-  const { currentTrack, isPlaying, currentTime, duration, playbackRate, preservePitch, isLoading } = state;
+  const { currentTrack, isPlaying, currentTime, duration, playbackRate, isLoading } = state;
   const [showSpeed, setShowSpeed] = useState(false);
   const [showSleep, setShowSleep] = useState(false);
   const [sleepTotalSeconds, setSleepTotalSeconds] = useState(0);
@@ -128,7 +128,7 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
           {/* Speed adjuster row */}
           <div className="flex items-center justify-center gap-4 px-4 pb-3">
             <button
-              onClick={() => controls.setPlaybackRate(Math.max(0.5, Number((playbackRate - SPEED_STEP).toFixed(1))))}
+              onClick={() => controls.setPlaybackRate(Math.max(0.25, Number((playbackRate - SPEED_STEP).toFixed(2))))}
               className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/8 text-white/55 hover:bg-white/15 hover:text-white/80 transition-colors"
               data-testid="button-speed-minus"
             >
@@ -136,11 +136,11 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
             </button>
             <div className="w-20 h-10 bg-white/10 rounded-lg flex items-center justify-center">
               <span className="text-white/90 text-lg font-medium tabular-nums">
-                {playbackRate.toFixed(1)}
+                {playbackRate.toFixed(2)}
               </span>
             </div>
             <button
-              onClick={() => controls.setPlaybackRate(Math.min(2, Number((playbackRate + SPEED_STEP).toFixed(1))))}
+              onClick={() => controls.setPlaybackRate(Math.min(2, Number((playbackRate + SPEED_STEP).toFixed(2))))}
               className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/8 text-white/55 hover:bg-white/15 hover:text-white/80 transition-colors"
               data-testid="button-speed-plus"
             >
@@ -148,18 +148,14 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
             </button>
           </div>
 
-          {/* Preserve Pitch toggle */}
+          {/* Reset button */}
           <div className="px-4 pb-4">
             <button
-              onClick={() => controls.setPreservePitch(!preservePitch)}
-              data-testid="button-preserve-pitch"
-              className={`w-full h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
-                preservePitch
-                  ? "bg-white/20 text-white/90"
-                  : "bg-white/8 text-white/55 hover:bg-white/12"
-              }`}
+              onClick={() => controls.setPlaybackRate(1)}
+              data-testid="button-speed-reset"
+              className="w-full h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors bg-white/8 text-white/55 hover:bg-white/12 hover:text-white/80"
             >
-              Preserve Pitch
+              Reset
             </button>
           </div>
         </div>

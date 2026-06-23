@@ -9,7 +9,6 @@ export interface PlayerState {
   currentTime: number;
   duration: number;
   playbackRate: number;
-  preservePitch: boolean;
   isLoading: boolean;
   error: string | null;
 }
@@ -22,7 +21,6 @@ export interface PlayerControls {
   prevTrack: () => void;
   nextTrack: () => void;
   setPlaybackRate: (rate: number) => void;
-  setPreservePitch: (enabled: boolean) => void;
   stop: () => void;
 }
 
@@ -35,7 +33,6 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     currentTime: 0,
     duration: 0,
     playbackRate: Number(localStorage.getItem("db_playbackRate")) || 1,
-    preservePitch: localStorage.getItem("db_preservePitch") !== "false",
     isLoading: false,
     error: null,
   });
@@ -44,7 +41,6 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     const audio = new Audio();
     audio.preload = "metadata";
     audio.playbackRate = state.playbackRate;
-    audio.preservesPitch = state.preservePitch;
     audioRef.current = audio;
 
     const onTimeUpdate = () => {
@@ -65,7 +61,6 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     const onCanPlay = () => {
       setState((s) => {
         audio.playbackRate = s.playbackRate;
-        audio.preservesPitch = s.preservePitch;
         return { ...s, isLoading: false };
       });
     };
@@ -113,7 +108,6 @@ export function useAudioPlayer(tracks: DriveFile[]) {
         const url = getStreamUrl(expected.id);
         audio.src = url;
         audio.playbackRate = state.playbackRate;
-        audio.preservesPitch = state.preservePitch;
         setState((s) => ({ ...s, currentTrack: expected, currentTime: 0, duration: 0, isLoading: true, error: null }));
         audio.play().catch(() => {});
       }
@@ -167,7 +161,6 @@ export function useAudioPlayer(tracks: DriveFile[]) {
       const url = getStreamUrl(track.id);
       audio.src = url;
       audio.playbackRate = s.playbackRate;
-      audio.preservesPitch = s.preservePitch;
       audio.play().catch(() => {});
       return { ...s, currentTrack: track, currentIndex: nextIndex, currentTime: 0, duration: 0, isLoading: true, error: null };
     });
@@ -184,27 +177,19 @@ export function useAudioPlayer(tracks: DriveFile[]) {
       const url = getStreamUrl(track.id);
       audio.src = url;
       audio.playbackRate = s.playbackRate;
-      audio.preservesPitch = s.preservePitch;
       audio.play().catch(() => {});
       return { ...s, currentTrack: track, currentIndex: nextIndex, currentTime: 0, duration: 0, isLoading: true, error: null };
     });
   }, [tracks]);
 
   const setPlaybackRate = useCallback((rate: number) => {
-    const clamped = Math.max(0.5, Math.min(2, Number(rate.toFixed(1))));
+    const clamped = Math.max(0.25, Math.min(2, Number(rate.toFixed(2))));
     const audio = audioRef.current;
     if (audio) {
       audio.playbackRate = clamped;
     }
     localStorage.setItem("db_playbackRate", String(clamped));
     setState((s) => ({ ...s, playbackRate: clamped }));
-  }, []);
-
-  const setPreservePitch = useCallback((enabled: boolean) => {
-    const audio = audioRef.current;
-    if (audio) audio.preservesPitch = enabled;
-    localStorage.setItem("db_preservePitch", String(enabled));
-    setState((s) => ({ ...s, preservePitch: enabled }));
   }, []);
 
   const stop = useCallback(() => {
@@ -224,7 +209,6 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     prevTrack,
     nextTrack,
     setPlaybackRate,
-    setPreservePitch,
     stop,
   };
 
