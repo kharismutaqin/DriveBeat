@@ -7,8 +7,6 @@ import {
   Loader2,
   Timer,
   Gauge,
-  Minus,
-  Plus,
   ChevronUp,
   X,
 } from "lucide-react";
@@ -150,8 +148,8 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
 
           {/* Countdown display (only when active) */}
           {isSleepActive && (
-            <div className="px-4 py-2">
-              <div className="flex items-center justify-center gap-2 py-2 bg-white/5 rounded-lg border border-white/5">
+            <div className="px-4 pt-1 pb-2">
+              <div className="flex items-center justify-center gap-2 py-1.5 bg-white/5 rounded-lg border border-white/5">
                 <Timer size={14} className="text-white/40" />
                 <span className="text-white/70 text-sm font-medium tabular-nums">
                   {formatDuration(sleepRemaining)}
@@ -161,61 +159,76 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
             </div>
           )}
 
-          {/* Manual input + - */}
-          <div className="flex items-center justify-center gap-4 px-4 py-3">
-            <button
-              onClick={() => adjustMinutes(-5)}
-              data-testid="button-sleep-minus"
-              className="w-9 h-9 rounded-lg bg-white/8 text-white/50 hover:text-white/80 hover:bg-white/12 transition-colors flex items-center justify-center"
-            >
-              <Minus size={14} />
-            </button>
-
-            <div className="flex items-center gap-1">
-              <input
-                type="number"
-                min={0}
-                max={999}
-                value={sleepMinutes}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value, 10);
-                  setSleepMinutes(isNaN(val) ? 0 : Math.max(0, Math.min(999, val)));
-                }}
-                data-testid="input-sleep-minutes"
-                className="w-14 bg-transparent text-white/80 text-lg font-medium text-center outline-none tabular-nums font-[Outfit]"
-              />
-              <span className="text-white/25 text-xs">min</span>
+          {/* Time picker: hours : minutes */}
+          <div className="flex items-center justify-center gap-2 px-4 py-3">
+            {/* Hours column */}
+            <div className="flex flex-col items-center gap-1">
+              <button
+                onClick={() => setSleepMinutes((prev) => Math.min(1439, prev + 60))}
+                className="text-white/35 hover:text-white/70 transition-colors p-0.5"
+              >
+                <ChevronUp size={14} />
+              </button>
+              <div className="w-12 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                <span className="text-white/80 text-lg font-medium tabular-nums">
+                  {String(Math.floor(sleepMinutes / 60)).padStart(2, "0")}
+                </span>
+              </div>
+              <button
+                onClick={() => setSleepMinutes((prev) => Math.max(0, prev - 60))}
+                className="text-white/35 hover:text-white/70 transition-colors p-0.5"
+              >
+                <ChevronUp size={14} className="rotate-180" />
+              </button>
             </div>
 
-            <button
-              onClick={() => adjustMinutes(5)}
-              data-testid="button-sleep-plus"
-              className="w-9 h-9 rounded-lg bg-white/8 text-white/50 hover:text-white/80 hover:bg-white/12 transition-colors flex items-center justify-center"
-            >
-              <Plus size={14} />
-            </button>
-          </div>
+            {/* Colon separator */}
+            <span className="text-white/25 text-lg font-medium pb-0.5">:</span>
 
-          {/* Action buttons */}
-          <div className="flex gap-2 px-4 pb-3">
-            <button
-              onClick={() => startSleepTimer(sleepMinutes)}
-              disabled={sleepMinutes <= 0}
-              data-testid="button-sleep-start"
-              className="flex-1 py-2 rounded-lg text-xs font-medium transition-colors
-                bg-white text-black hover:bg-white/90 active:bg-white/80
-                disabled:bg-white/8 disabled:text-white/20 disabled:cursor-not-allowed"
-            >
-              {isSleepActive ? "Reset" : "Mulai"}
-            </button>
-            <button
-              onClick={cancelSleepTimer}
-              data-testid="button-sleep-off"
-              className="px-4 py-2 rounded-lg text-xs font-medium transition-colors
-                bg-white/8 text-white/50 hover:bg-white/12 hover:text-white/75"
-            >
-              Off
-            </button>
+            {/* Minutes column */}
+            <div className="flex flex-col items-center gap-1">
+              <button
+                onClick={() => setSleepMinutes((prev) => Math.min(1439, prev + 1))}
+                className="text-white/35 hover:text-white/70 transition-colors p-0.5"
+              >
+                <ChevronUp size={14} />
+              </button>
+              <div className="w-12 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                <span className="text-white/80 text-lg font-medium tabular-nums">
+                  {String(sleepMinutes % 60).padStart(2, "0")}
+                </span>
+              </div>
+              <button
+                onClick={() => setSleepMinutes((prev) => Math.max(0, prev - 1))}
+                className="text-white/35 hover:text-white/70 transition-colors p-0.5"
+              >
+                <ChevronUp size={14} className="rotate-180" />
+              </button>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex flex-col gap-2 ml-3">
+              <button
+                onClick={() => startSleepTimer(sleepMinutes)}
+                disabled={sleepMinutes <= 0}
+                data-testid="button-sleep-start"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors
+                  bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90
+                  disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <Timer size={14} />
+                <span>{isSleepActive ? "On" : "On"}</span>
+              </button>
+              <button
+                onClick={cancelSleepTimer}
+                data-testid="button-sleep-off"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors
+                  bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90"
+              >
+                <Timer size={14} />
+                <span>Reset</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
