@@ -9,6 +9,7 @@ export interface PlayerState {
   currentTime: number;
   duration: number;
   playbackRate: number;
+  preservePitch: boolean;
   isLoading: boolean;
   error: string | null;
 }
@@ -21,6 +22,7 @@ export interface PlayerControls {
   prevTrack: () => void;
   nextTrack: () => void;
   setPlaybackRate: (rate: number) => void;
+  setPreservePitch: (enabled: boolean) => void;
   stop: () => void;
 }
 
@@ -32,7 +34,8 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     isPlaying: false,
     currentTime: 0,
     duration: 0,
-    playbackRate: 1,
+    playbackRate: Number(localStorage.getItem("db_playbackRate")) || 1,
+    preservePitch: localStorage.getItem("db_preservePitch") !== "false",
     isLoading: false,
     error: null,
   });
@@ -40,6 +43,8 @@ export function useAudioPlayer(tracks: DriveFile[]) {
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "metadata";
+    audio.playbackRate = state.playbackRate;
+    audio.preservesPitch = state.preservePitch;
     audioRef.current = audio;
 
     const onTimeUpdate = () => {
@@ -57,7 +62,11 @@ export function useAudioPlayer(tracks: DriveFile[]) {
       });
     };
     const onWaiting = () => setState((s) => ({ ...s, isLoading: true }));
-    const onCanPlay = () => setState((s) => ({ ...s, isLoading: false }));
+    const onCanPlay = () => {
+      audio.playbackRate = state.playbackRate;
+      audio.preservesPitch = state.preservePitch;
+      setState((s) => ({ ...s, isLoading: false }));
+    };
     const onError = () => {
       const errorCode = audio.error?.code;
       // Code 4 = MEDIA_ERR_SRC_NOT_SUPPORTED, which fires when src is empty or invalid
@@ -177,9 +186,22 @@ export function useAudioPlayer(tracks: DriveFile[]) {
   }, [tracks]);
 
   const setPlaybackRate = useCallback((rate: number) => {
+    const clamped = Math.max(0.5, Math.min(2, Number(rate.toFixed(1))));
     const audio = audioRef.current;
-    if (audio) audio.playbackRate = rate;
-    setState((s) => ({ ...s, playbackRate: rate }));
+    if (audio) {
+      audio.playbackRate = clamped;
+      audio.preservesPitch = true;
+    }
+    localStorage.setItem("db_playbackRate", String(clamped));
+    localStorage.setItem("db_preservePitch", "true");
+    setState((s) => ({ ...s, playbackRate: clamped, preservePitch: true }));
+  }, []);
+
+  const setPreservePitch = useCallback((enabled: boolean) => {
+    const audio = audioRef.current;
+    if (audio) audio.preservesPitch = enabled;
+    localStorage.setItem("db_preservePitch", String(enabled));
+    setState((s) => ({ ...s, preservePitch: enabled }));
   }, []);
 
   const stop = useCallback(() => {
@@ -199,6 +221,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     prevTrack,
     nextTrack,
     setPlaybackRate,
+    setPreservePitch,
     stop,
   };
 

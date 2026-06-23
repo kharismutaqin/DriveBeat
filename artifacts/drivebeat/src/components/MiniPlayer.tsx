@@ -9,6 +9,8 @@ import {
   Gauge,
   ChevronUp,
   X,
+  Minus,
+  Plus,
 } from "lucide-react";
 import { formatDuration, cleanTrackName } from "../lib/drive";
 import type { PlayerState, PlayerControls } from "../hooks/useAudioPlayer";
@@ -18,10 +20,10 @@ interface MiniPlayerProps {
   controls: PlayerControls;
 }
 
-const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+const SPEED_STEP = 0.1;
 
 export function MiniPlayer({ state, controls }: MiniPlayerProps) {
-  const { currentTrack, isPlaying, currentTime, duration, playbackRate, isLoading } = state;
+  const { currentTrack, isPlaying, currentTime, duration, playbackRate, preservePitch, isLoading } = state;
   const [showSpeed, setShowSpeed] = useState(false);
   const [showSleep, setShowSleep] = useState(false);
   const [sleepTotalSeconds, setSleepTotalSeconds] = useState(0);
@@ -112,22 +114,53 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
       {/* Speed popup */}
       {showSpeed && (
         <div className="absolute bottom-full left-4 right-4 mb-2 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
-          <p className="text-white/30 text-[10px] uppercase tracking-widest px-4 pt-3 pb-1.5">Kecepatan Putar</p>
-          <div className="flex flex-wrap gap-1.5 px-4 pb-3">
-            {SPEED_OPTIONS.map((rate) => (
-              <button
-                key={rate}
-                onClick={() => { controls.setPlaybackRate(rate); setShowSpeed(false); }}
-                data-testid={`button-speed-${rate}`}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  rate === playbackRate
-                    ? "bg-white text-black"
-                    : "bg-white/8 text-white/55 hover:bg-white/12"
-                }`}
-              >
-                {rate === 1 ? "1\u00d7" : `${rate}\u00d7`}
-              </button>
-            ))}
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 pt-3 pb-2">
+            <p className="text-white/30 text-[10px] uppercase tracking-widest">Kecepatan Putar</p>
+            <button
+              onClick={() => setShowSpeed(false)}
+              className="text-white/25 hover:text-white/60 transition-colors p-0.5"
+            >
+              <X size={12} />
+            </button>
+          </div>
+
+          {/* Speed adjuster row */}
+          <div className="flex items-center justify-center gap-4 px-4 pb-3">
+            <button
+              onClick={() => controls.setPlaybackRate(Math.max(0.5, Number((playbackRate - SPEED_STEP).toFixed(1))))}
+              className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/8 text-white/55 hover:bg-white/15 hover:text-white/80 transition-colors"
+              data-testid="button-speed-minus"
+            >
+              <Minus size={16} />
+            </button>
+            <div className="w-20 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+              <span className="text-white/90 text-lg font-medium tabular-nums">
+                {playbackRate.toFixed(1)}
+              </span>
+            </div>
+            <button
+              onClick={() => controls.setPlaybackRate(Math.min(2, Number((playbackRate + SPEED_STEP).toFixed(1))))}
+              className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/8 text-white/55 hover:bg-white/15 hover:text-white/80 transition-colors"
+              data-testid="button-speed-plus"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+
+          {/* Preserve Pitch toggle */}
+          <div className="px-4 pb-4">
+            <button
+              onClick={() => controls.setPreservePitch(!preservePitch)}
+              data-testid="button-preserve-pitch"
+              className={`w-full h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
+                preservePitch
+                  ? "bg-white/20 text-white/90"
+                  : "bg-white/8 text-white/55 hover:bg-white/12"
+              }`}
+            >
+              Preserve Pitch
+            </button>
           </div>
         </div>
       )}
