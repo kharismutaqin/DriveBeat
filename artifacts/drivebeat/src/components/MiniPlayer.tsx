@@ -24,7 +24,7 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
   const { currentTrack, isPlaying, currentTime, duration, playbackRate, isLoading } = state;
   const [showSpeed, setShowSpeed] = useState(false);
   const [showSleep, setShowSleep] = useState(false);
-  const [sleepMinutes, setSleepMinutes] = useState(0);
+  const [sleepTotalSeconds, setSleepTotalSeconds] = useState(0);
   const [sleepRemaining, setSleepRemaining] = useState(0);
   const sleepTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sleepIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -42,20 +42,20 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const startSleepTimer = (minutes: number) => {
+  const startSleepTimer = (totalSeconds: number) => {
     if (sleepTimerRef.current) clearTimeout(sleepTimerRef.current);
     if (sleepIntervalRef.current) clearInterval(sleepIntervalRef.current);
-    setSleepMinutes(minutes);
+    setSleepTotalSeconds(totalSeconds);
     setShowSleep(false);
 
-    if (minutes <= 0) {
+    if (totalSeconds <= 0) {
       setSleepRemaining(0);
       return;
     }
 
-    const totalMs = minutes * 60 * 1000;
+    const totalMs = totalSeconds * 1000;
     const endTime = Date.now() + totalMs;
-    setSleepRemaining(minutes * 60);
+    setSleepRemaining(totalSeconds);
 
     sleepIntervalRef.current = setInterval(() => {
       const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
@@ -67,7 +67,7 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
 
     sleepTimerRef.current = setTimeout(() => {
       controls.stop();
-      setSleepMinutes(0);
+      setSleepTotalSeconds(0);
       setSleepRemaining(0);
     }, totalMs);
   };
@@ -75,13 +75,13 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
   const cancelSleepTimer = () => {
     if (sleepTimerRef.current) clearTimeout(sleepTimerRef.current);
     if (sleepIntervalRef.current) clearInterval(sleepIntervalRef.current);
-    setSleepMinutes(0);
+    setSleepTotalSeconds(0);
     setSleepRemaining(0);
     setShowSleep(false);
   };
 
-  const adjustMinutes = (delta: number) => {
-    setSleepMinutes((prev) => Math.max(0, Math.min(999, prev + delta)));
+  const adjustTime = (deltaSeconds: number) => {
+    setSleepTotalSeconds((prev) => Math.max(0, Math.min(3599, prev + deltaSeconds)));
   };
 
   useEffect(() => {
@@ -146,36 +146,23 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
             </button>
           </div>
 
-          {/* Countdown display (only when active) */}
-          {isSleepActive && (
-            <div className="px-4 pt-1 pb-2">
-              <div className="flex items-center justify-center gap-2 py-1.5 bg-white/5 rounded-lg border border-white/5">
-                <Timer size={14} className="text-white/40" />
-                <span className="text-white/70 text-sm font-medium tabular-nums">
-                  {formatDuration(sleepRemaining)}
-                </span>
-                <span className="text-white/20 text-xs">tersisa</span>
-              </div>
-            </div>
-          )}
-
-          {/* Time picker: hours : minutes */}
+          {/* Time picker: MM : SS — countdown runs live in the picker */}
           <div className="flex items-center justify-center gap-2 px-4 py-3">
-            {/* Hours column */}
+            {/* Minutes column */}
             <div className="flex flex-col items-center gap-1">
               <button
-                onClick={() => setSleepMinutes((prev) => Math.min(1439, prev + 60))}
+                onClick={() => adjustTime(60)}
                 className="text-white/35 hover:text-white/70 transition-colors p-0.5"
               >
                 <ChevronUp size={14} />
               </button>
               <div className="w-12 h-10 bg-white/10 rounded-lg flex items-center justify-center">
                 <span className="text-white/80 text-lg font-medium tabular-nums">
-                  {String(Math.floor(sleepMinutes / 60)).padStart(2, "0")}
+                  {String(Math.floor((isSleepActive ? sleepRemaining : sleepTotalSeconds) / 60)).padStart(2, "0")}
                 </span>
               </div>
               <button
-                onClick={() => setSleepMinutes((prev) => Math.max(0, prev - 60))}
+                onClick={() => adjustTime(-60)}
                 className="text-white/35 hover:text-white/70 transition-colors p-0.5"
               >
                 <ChevronUp size={14} className="rotate-180" />
@@ -185,21 +172,21 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
             {/* Colon separator */}
             <span className="text-white/25 text-lg font-medium pb-0.5">:</span>
 
-            {/* Minutes column */}
+            {/* Seconds column */}
             <div className="flex flex-col items-center gap-1">
               <button
-                onClick={() => setSleepMinutes((prev) => Math.min(1439, prev + 1))}
+                onClick={() => adjustTime(10)}
                 className="text-white/35 hover:text-white/70 transition-colors p-0.5"
               >
                 <ChevronUp size={14} />
               </button>
               <div className="w-12 h-10 bg-white/10 rounded-lg flex items-center justify-center">
                 <span className="text-white/80 text-lg font-medium tabular-nums">
-                  {String(sleepMinutes % 60).padStart(2, "0")}
+                  {String((isSleepActive ? sleepRemaining : sleepTotalSeconds) % 60).padStart(2, "0")}
                 </span>
               </div>
               <button
-                onClick={() => setSleepMinutes((prev) => Math.max(0, prev - 1))}
+                onClick={() => adjustTime(-10)}
                 className="text-white/35 hover:text-white/70 transition-colors p-0.5"
               >
                 <ChevronUp size={14} className="rotate-180" />
@@ -209,15 +196,15 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
             {/* Action buttons */}
             <div className="flex flex-col gap-2 ml-3">
               <button
-                onClick={() => startSleepTimer(sleepMinutes)}
-                disabled={sleepMinutes <= 0}
+                onClick={() => startSleepTimer(isSleepActive ? sleepRemaining : sleepTotalSeconds)}
+                disabled={sleepTotalSeconds <= 0 && !isSleepActive}
                 data-testid="button-sleep-start"
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors
                   bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90
                   disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <Timer size={14} />
-                <span>{isSleepActive ? "On" : "On"}</span>
+                <span>On</span>
               </button>
               <button
                 onClick={cancelSleepTimer}
