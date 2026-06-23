@@ -289,14 +289,13 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
           <button
             onClick={() => { setShowSpeed(!showSpeed); setShowSleep(false); }}
             data-testid="button-speed"
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+            className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
               showSpeed || playbackRate !== 1
                 ? "bg-white/12 text-white/80"
-                : "text-white/30 hover:text-white/55 hover:bg-white/6"
+                : "bg-transparent text-white/30 hover:text-white/55"
             }`}
           >
-            <Gauge size={13} />
-            <span>{playbackRate === 1 ? "1\u00d7" : `${playbackRate}\u00d7`}</span>
+            <Gauge size={16} />
           </button>
 
           {/* Center: player controls */}
@@ -360,14 +359,13 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
           <button
             onClick={() => { setShowSleep(!showSleep); setShowSpeed(false); }}
             data-testid="button-sleep"
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+            className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
               showSleep || isSleepActive
                 ? "bg-white/12 text-white/80"
-                : "text-white/30 hover:text-white/55 hover:bg-white/6"
+                : "bg-transparent text-white/30 hover:text-white/55"
             }`}
           >
-            <Timer size={13} />
-            <span>{isSleepActive ? "On" : "Off"}</span>
+            <Timer size={16} />
           </button>
         </div>
       </div>
