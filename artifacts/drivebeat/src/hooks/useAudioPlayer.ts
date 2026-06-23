@@ -195,11 +195,9 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     const audio = audioRef.current;
     if (audio) {
       audio.playbackRate = clamped;
-      audio.preservesPitch = true;
     }
     localStorage.setItem("db_playbackRate", String(clamped));
-    localStorage.setItem("db_preservePitch", "true");
-    setState((s) => ({ ...s, playbackRate: clamped, preservePitch: true }));
+    setState((s) => ({ ...s, playbackRate: clamped }));
   }, []);
 
   const setPreservePitch = useCallback((enabled: boolean) => {
