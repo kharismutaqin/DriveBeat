@@ -1,4 +1,11 @@
-const API_KEY = import.meta.env.VITE_GOOGLE_DRIVE_API_KEY as string;
+// Use the backend proxy for all Google Drive API calls.
+// The API server is routed at /api by the shared proxy.
+const PROXY_BASE = "/api/drive";
+
+export function isApiKeyConfigured(): boolean {
+  // Key is stored on the server, so we can just check if the server is reachable.
+  return true;
+}
 
 export interface DriveFile {
   id: string;
@@ -31,10 +38,12 @@ export function extractFolderId(url: string): string | null {
 }
 
 export async function fetchFolderName(folderId: string): Promise<string> {
-  const url = `https://www.googleapis.com/drive/v3/files/${folderId}?fields=name&key=${API_KEY}`;
+  const url = `${PROXY_BASE}/files/${folderId}?fields=name`;
   const res = await fetch(url);
   if (!res.ok) {
-    throw new Error(`Failed to fetch folder info: ${res.status} ${res.statusText}`);
+    const body = await res.json().catch(() => ({}));
+    console.error("Drive proxy folder error:", res.status, body);
+    throw new Error(`Failed to fetch folder info: ${res.status} ${res.statusText}|${body.error?.message || body.error?.errors?.[0]?.message || body.message || ""}`);
   }
   const data = await res.json();
   return data.name ?? "Untitled Folder";
@@ -64,10 +73,12 @@ export async function fetchAudioFiles(folderId: string): Promise<DriveFile[]> {
 
   do {
     const tokenParam = pageToken ? `&pageToken=${pageToken}` : "";
-    const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&orderBy=name&pageSize=1000${tokenParam}&key=${API_KEY}`;
+    const url = `${PROXY_BASE}/files?q=${q}&fields=${fields}&orderBy=name&pageSize=1000${tokenParam}`;
     const res = await fetch(url);
     if (!res.ok) {
-      throw new Error(`Drive API error: ${res.status} ${res.statusText}`);
+      const body = await res.json().catch(() => ({}));
+      console.error("Drive proxy list error:", res.status, body);
+      throw new Error(`Drive API error: ${res.status} ${res.statusText}|${body.error?.message || body.error?.errors?.[0]?.message || body.message || ""}`);
     }
     const data = await res.json();
     allFiles = allFiles.concat(data.files ?? []);
@@ -78,7 +89,7 @@ export async function fetchAudioFiles(folderId: string): Promise<DriveFile[]> {
 }
 
 export function getStreamUrl(fileId: string): string {
-  return `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${API_KEY}`;
+  return `${PROXY_BASE}/media/${fileId}?alt=media`;
 }
 
 export function formatDuration(seconds: number): string {

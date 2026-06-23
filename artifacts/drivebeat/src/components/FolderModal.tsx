@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Loader2, Link2, X } from "lucide-react";
-import { extractFolderId, fetchFolderName, fetchAudioFiles } from "../lib/drive";
+import { extractFolderId, fetchFolderName, fetchAudioFiles, isApiKeyConfigured } from "../lib/drive";
 import { saveFolder, saveTracks } from "../lib/storage";
 import type { DriveFolder } from "../lib/drive";
 
@@ -23,6 +23,12 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
   const handleSubmit = async () => {
     const trimmed = link.trim();
     if (!trimmed) return;
+
+    if (!isApiKeyConfigured()) {
+      setErrorMsg("Google Drive API Key belum dikonfigurasi. Hubungi admin untuk mengatur API Key.");
+      setStatus("error");
+      return;
+    }
 
     const folderId = extractFolderId(trimmed);
     if (!folderId) {
@@ -52,11 +58,19 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
       onFolderAdded(folder);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Gagal mengambil data folder.";
-      setErrorMsg(msg.includes("403") || msg.includes("401")
-        ? "Akses ditolak. Pastikan folder disetel ke 'Siapa saja yang memiliki link' dapat melihat."
-        : msg.includes("404")
-        ? "Folder tidak ditemukan. Periksa kembali link yang dimasukkan."
-        : "Gagal menghubungi Google Drive. Periksa API Key dan koneksi internet.");
+      const detail = msg.includes("|") ? msg.split("|")[1] : "";
+      const statusCode = msg.includes("|") ? msg.split("|")[0] : msg;
+      console.error("Drive error detail:", statusCode, detail);
+
+      if (msg.includes("403") || msg.includes("401")) {
+        setErrorMsg("Akses ditolak. Google Drive API Key tidak memiliki izin. Pesan: " + (detail || "API Key mungkin belum aktif atau folder tidak publik.") + " Pastikan folder Anda disetel ke 'Siapa saja yang memiliki link dapat melihat.'");
+      } else if (msg.includes("404")) {
+        setErrorMsg("Folder tidak ditemukan. Periksa kembali link yang dimasukkan.");
+      } else if (msg.includes("400") && msg.includes("API Key")) {
+        setErrorMsg("API Key tidak valid. Pesan: " + (detail || "API Key mungkin tidak aktif."));
+      } else {
+        setErrorMsg("Gagal menghubungi Google Drive. Pesan: " + (detail || msg));
+      }
       setStatus("error");
     }
   };
