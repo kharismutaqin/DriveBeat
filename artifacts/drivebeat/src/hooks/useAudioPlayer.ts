@@ -41,6 +41,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     const audio = new Audio();
     audio.preload = "metadata";
     audio.playbackRate = state.playbackRate;
+    audio.preservesPitch = state.playbackRate === 1;
     audioRef.current = audio;
 
     const onTimeUpdate = () => {
@@ -61,6 +62,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     const onCanPlay = () => {
       setState((s) => {
         audio.playbackRate = s.playbackRate;
+        audio.preservesPitch = s.playbackRate === 1;
         return { ...s, isLoading: false };
       });
     };
@@ -108,6 +110,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
         const url = getStreamUrl(expected.id);
         audio.src = url;
         audio.playbackRate = state.playbackRate;
+        audio.preservesPitch = state.playbackRate === 1;
         setState((s) => ({ ...s, currentTrack: expected, currentTime: 0, duration: 0, isLoading: true, error: null }));
         audio.play().catch(() => {});
       }
@@ -120,6 +123,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     const url = getStreamUrl(track.id);
     audio.src = url;
     audio.playbackRate = state.playbackRate;
+    audio.preservesPitch = state.playbackRate === 1;
     setState((s) => ({ ...s, currentTrack: track, currentIndex: index, currentTime: 0, duration: 0, isLoading: true, error: null, isPlaying: false }));
     audio.play().catch(() => {});
   }, [state.playbackRate]);
@@ -161,6 +165,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
       const url = getStreamUrl(track.id);
       audio.src = url;
       audio.playbackRate = s.playbackRate;
+      audio.preservesPitch = s.playbackRate === 1;
       audio.play().catch(() => {});
       return { ...s, currentTrack: track, currentIndex: nextIndex, currentTime: 0, duration: 0, isLoading: true, error: null };
     });
@@ -177,6 +182,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
       const url = getStreamUrl(track.id);
       audio.src = url;
       audio.playbackRate = s.playbackRate;
+      audio.preservesPitch = s.playbackRate === 1;
       audio.play().catch(() => {});
       return { ...s, currentTrack: track, currentIndex: nextIndex, currentTime: 0, duration: 0, isLoading: true, error: null };
     });
@@ -187,6 +193,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     const audio = audioRef.current;
     if (audio) {
       audio.playbackRate = clamped;
+      audio.preservesPitch = false; // pitch effect active: pitch changes with speed
     }
     localStorage.setItem("db_playbackRate", String(clamped));
     setState((s) => ({ ...s, playbackRate: clamped }));
