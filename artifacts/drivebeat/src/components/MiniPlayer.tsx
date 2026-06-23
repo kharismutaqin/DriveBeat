@@ -149,33 +149,34 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
         </div>
       )}
 
-      {/* Progress bar */}
-      <div
-        className="h-[2px] bg-white/8 cursor-pointer relative group"
-        onClick={handleSeek}
-        data-testid="progress-bar"
-      >
-        <div
-          className="h-full bg-white/70 transition-none"
-          style={{ width: `${progress * 100}%` }}
-        />
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1/2"
-          style={{ left: `${progress * 100}%` }}
-        />
-      </div>
-
       <div className="px-4 pt-3 pb-4">
-        {/* Track name & time */}
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-white/80 text-sm font-medium truncate max-w-[65%] leading-snug" data-testid="text-track-name">
-            {displayName}
-          </p>
-          <div className="flex items-center gap-1 shrink-0 text-[11px] text-white/30 tabular-nums">
-            <span data-testid="text-current-time">{formatDuration(currentTime)}</span>
-            <span>/</span>
-            <span data-testid="text-duration">{formatDuration(duration)}</span>
+        {/* Track name — centered */}
+        <p className="text-white/80 text-sm font-medium text-center leading-snug mb-3" data-testid="text-track-name">
+          {displayName}
+        </p>
+
+        {/* Duration left — progress bar — duration right */}
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-[11px] text-white/30 tabular-nums shrink-0 w-10 text-right" data-testid="text-current-time">
+            {formatDuration(currentTime)}
+          </span>
+          <div
+            className="flex-1 h-[2px] bg-white/8 cursor-pointer relative group rounded-full"
+            onClick={handleSeek}
+            data-testid="progress-bar"
+          >
+            <div
+              className="h-full bg-white/70 rounded-full transition-none"
+              style={{ width: `${progress * 100}%` }}
+            />
+            <div
+              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1/2"
+              style={{ left: `${progress * 100}%` }}
+            />
           </div>
+          <span className="text-[11px] text-white/30 tabular-nums shrink-0 w-10" data-testid="text-duration">
+            {formatDuration(duration)}
+          </span>
         </div>
 
         {/* Controls row */}
