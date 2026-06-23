@@ -63,9 +63,11 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     };
     const onWaiting = () => setState((s) => ({ ...s, isLoading: true }));
     const onCanPlay = () => {
-      audio.playbackRate = state.playbackRate;
-      audio.preservesPitch = state.preservePitch;
-      setState((s) => ({ ...s, isLoading: false }));
+      setState((s) => {
+        audio.playbackRate = s.playbackRate;
+        audio.preservesPitch = s.preservePitch;
+        return { ...s, isLoading: false };
+      });
     };
     const onError = () => {
       const errorCode = audio.error?.code;
@@ -111,6 +113,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
         const url = getStreamUrl(expected.id);
         audio.src = url;
         audio.playbackRate = state.playbackRate;
+        audio.preservesPitch = state.preservePitch;
         setState((s) => ({ ...s, currentTrack: expected, currentTime: 0, duration: 0, isLoading: true, error: null }));
         audio.play().catch(() => {});
       }
@@ -164,6 +167,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
       const url = getStreamUrl(track.id);
       audio.src = url;
       audio.playbackRate = s.playbackRate;
+      audio.preservesPitch = s.preservePitch;
       audio.play().catch(() => {});
       return { ...s, currentTrack: track, currentIndex: nextIndex, currentTime: 0, duration: 0, isLoading: true, error: null };
     });
@@ -180,6 +184,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
       const url = getStreamUrl(track.id);
       audio.src = url;
       audio.playbackRate = s.playbackRate;
+      audio.preservesPitch = s.preservePitch;
       audio.play().catch(() => {});
       return { ...s, currentTrack: track, currentIndex: nextIndex, currentTime: 0, duration: 0, isLoading: true, error: null };
     });
