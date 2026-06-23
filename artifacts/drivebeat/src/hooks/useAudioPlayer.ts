@@ -59,6 +59,13 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     const onWaiting = () => setState((s) => ({ ...s, isLoading: true }));
     const onCanPlay = () => setState((s) => ({ ...s, isLoading: false }));
     const onError = () => {
+      const errorCode = audio.error?.code;
+      // Code 4 = MEDIA_ERR_SRC_NOT_SUPPORTED, which fires when src is empty or invalid
+      if (!audio.src || audio.src === "" || errorCode === 4) {
+        // Intentional stop or empty source - don't show error
+        setState((s) => ({ ...s, isLoading: false }));
+        return;
+      }
       setState((s) => ({ ...s, isLoading: false, error: "Gagal memuat audio. Pastikan file dapat diakses publik." }));
     };
 
@@ -181,7 +188,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
       audio.pause();
       audio.src = "";
     }
-    setState((s) => ({ ...s, currentTrack: null, currentIndex: -1, isPlaying: false, currentTime: 0, duration: 0 }));
+    setState((s) => ({ ...s, currentTrack: null, currentIndex: -1, isPlaying: false, currentTime: 0, duration: 0, error: null }));
   }, []);
 
   const controls: PlayerControls = {
