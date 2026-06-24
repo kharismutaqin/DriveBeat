@@ -116,7 +116,7 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
         <div className="absolute bottom-full left-4 right-4 mb-2 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-3 pb-2">
-            <p className="text-white/30 text-[10px] uppercase tracking-widest">Kecepatan Putar</p>
+            <p className="text-white/30 text-[10px] uppercase tracking-widest">Playback Speed</p>
             <button
               onClick={() => setShowSpeed(false)}
               className="text-white/25 hover:text-white/60 transition-colors p-0.5"
@@ -300,7 +300,7 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
               onClick={() => controls.seekBy(-5)}
               data-testid="button-seek-back"
               className="text-white/40 hover:text-white/75 transition-colors p-1.5 rounded-lg hover:bg-white/6"
-              title="Mundur 5 detik"
+              title="Rewind 5 seconds"
             >
               <span className="flex items-center gap-0.5">
                 <SkipBack size={14} />
@@ -342,7 +342,7 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
               onClick={() => controls.seekBy(5)}
               data-testid="button-seek-forward"
               className="text-white/40 hover:text-white/75 transition-colors p-1.5 rounded-lg hover:bg-white/6"
-              title="Maju 5 detik"
+              title="Forward 5 seconds"
             >
               <span className="flex items-center gap-0.5">
                 <span className="text-[10px] font-medium">5</span>

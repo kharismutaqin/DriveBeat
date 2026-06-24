@@ -25,14 +25,14 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
     if (!trimmed) return;
 
     if (!isApiKeyConfigured()) {
-      setErrorMsg("Google Drive API Key belum dikonfigurasi. Hubungi admin untuk mengatur API Key.");
+      setErrorMsg("Google Drive API Key is not configured. Contact admin to set up the API Key.");
       setStatus("error");
       return;
     }
 
     const folderId = extractFolderId(trimmed);
     if (!folderId) {
-      setErrorMsg("Link tidak valid. Gunakan link Google Drive folder yang benar.");
+      setErrorMsg("Invalid link. Please use a valid Google Drive folder link.");
       setStatus("error");
       return;
     }
@@ -47,7 +47,7 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
       ]);
 
       if (files.length === 0) {
-        setErrorMsg("Folder ini tidak berisi file audio. Pastikan folder berisi musik dan dapat diakses publik.");
+        setErrorMsg("This folder doesn't contain any audio files. Make sure the folder contains music and is publicly accessible.");
         setStatus("error");
         return;
       }
@@ -57,19 +57,19 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
       saveTracks(folderId, files);
       onFolderAdded(folder);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Gagal mengambil data folder.";
+      const msg = e instanceof Error ? e.message : "Failed to fetch folder data.";
       const detail = msg.includes("|") ? msg.split("|")[1] : "";
       const statusCode = msg.includes("|") ? msg.split("|")[0] : msg;
       console.error("Drive error detail:", statusCode, detail);
 
       if (msg.includes("403") || msg.includes("401")) {
-        setErrorMsg("Akses ditolak. Google Drive API Key tidak memiliki izin. Pesan: " + (detail || "API Key mungkin belum aktif atau folder tidak publik.") + " Pastikan folder Anda disetel ke 'Siapa saja yang memiliki link dapat melihat.'");
+        setErrorMsg("Access denied. The Google Drive API Key doesn't have permission. Message: " + (detail || "The API Key may not be active or the folder is not public.") + " Make sure your folder is set to 'Anyone with the link can view.'");
       } else if (msg.includes("404")) {
-        setErrorMsg("Folder tidak ditemukan. Periksa kembali link yang dimasukkan.");
+        setErrorMsg("Folder not found. Please double-check the link you entered.");
       } else if (msg.includes("400") && msg.includes("API Key")) {
-        setErrorMsg("API Key tidak valid. Pesan: " + (detail || "API Key mungkin tidak aktif."));
+        setErrorMsg("Invalid API Key. Message: " + (detail || "The API Key may not be active."));
       } else {
-        setErrorMsg("Gagal menghubungi Google Drive. Pesan: " + (detail || msg));
+        setErrorMsg("Failed to reach Google Drive. Message: " + (detail || msg));
       }
       setStatus("error");
     }
@@ -85,7 +85,7 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="text-white text-base font-semibold tracking-tight">DriveBeat</h2>
-            <p className="text-white/35 text-xs mt-0.5">Tempel link folder Google Drive</p>
+            <p className="text-white/35 text-xs mt-0.5">Paste a Google Drive folder link</p>
           </div>
           {canClose && onClose && (
             <button
@@ -130,11 +130,11 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
             disabled:bg-white/10 disabled:text-white/25 disabled:cursor-not-allowed"
           data-testid="button-load-folder"
         >
-          {status === "loading" ? "Memuat..." : "Muat Musik"}
+          {status === "loading" ? "Loading..." : "Load Music"}
         </button>
 
         <p className="text-white/20 text-xs text-center mt-3 leading-relaxed">
-          Folder harus disetel publik agar dapat diakses
+          Folder must be set to public to be accessible
         </p>
       </div>
     </div>

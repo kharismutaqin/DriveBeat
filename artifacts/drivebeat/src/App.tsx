@@ -177,7 +177,7 @@ export default function App() {
             onClick={() => { setShowFolderModal(true); setShowFolderPicker(false); }}
             data-testid="button-add-folder"
             className="text-white/35 hover:text-white/70 transition-colors p-1.5 rounded-lg hover:bg-white/6"
-            title="Tambah folder baru"
+            title="Add new folder"
           >
             <Plus size={18} />
           </button>
@@ -206,7 +206,7 @@ export default function App() {
                 data-testid={`button-remove-folder-${folder.id}`}
                 className="px-4 py-3 text-white/15 hover:text-red-400/60 transition-colors opacity-0 group-hover:opacity-100 text-xs"
               >
-                hapus
+                remove
               </button>
             </div>
           ))}

@@ -21,7 +21,7 @@ export function TrackList({
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3 text-white/25">
         <Loader2 size={20} className="animate-spin" />
-        <span className="text-sm">Mengambil daftar musik...</span>
+        <span className="text-sm">Loading music list...</span>
       </div>
     );
   }
@@ -30,7 +30,7 @@ export function TrackList({
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3 text-white/25">
         <Music2 size={28} strokeWidth={1.2} />
-        <span className="text-sm">Tidak ada file audio ditemukan</span>
+        <span className="text-sm">No audio files found</span>
       </div>
     );
   }

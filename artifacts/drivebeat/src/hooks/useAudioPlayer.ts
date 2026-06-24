@@ -74,7 +74,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
         setState((s) => ({ ...s, isLoading: false }));
         return;
       }
-      setState((s) => ({ ...s, isLoading: false, error: "Gagal memuat audio. Pastikan file dapat diakses publik." }));
+      setState((s) => ({ ...s, isLoading: false, error: "Failed to load audio. Make sure the file is publicly accessible." }));
     };
 
     audio.addEventListener("timeupdate", onTimeUpdate);
