@@ -139,6 +139,14 @@ export default function App() {
     playerControls.stop();
   };
 
+  const setShowFolderModal = (show: boolean) => {
+    dispatch({ type: "setShowFolderModal", show });
+  };
+
+  const setShowFolderPicker = (show: boolean) => {
+    dispatch({ type: "setShowFolderPicker", show });
+  };
+
   const hasNoFolders = folders.length === 0;
 
   return (
