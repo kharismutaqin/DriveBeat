@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useReducer, useEffect, useCallback } from "react";
 import { Plus, ChevronDown } from "lucide-react";
 import { FolderModal } from "./components/FolderModal";
 import { TrackList } from "./components/TrackList";
@@ -8,13 +8,92 @@ import { getFolders, getTracks, saveTracks, removeFolder } from "./lib/storage";
 import { fetchAudioFiles } from "./lib/drive";
 import type { DriveFile, DriveFolder } from "./lib/drive";
 
+interface AppState {
+  folders: DriveFolder[];
+  activeFolderIndex: number;
+  tracks: DriveFile[];
+  isLoadingTracks: boolean;
+  showFolderModal: boolean;
+  showFolderPicker: boolean;
+}
+
+type AppAction =
+  | { type: "setFolders"; folders: DriveFolder[] }
+  | { type: "setActiveFolderIndex"; index: number }
+  | { type: "setTracks"; tracks: DriveFile[] }
+  | { type: "setLoading"; loading: boolean }
+  | { type: "setShowFolderModal"; show: boolean }
+  | { type: "setShowFolderPicker"; show: boolean }
+  | { type: "folderAdded"; folder: DriveFolder }
+  | { type: "syncActiveIndex" }
+  | { type: "removeFolder"; index: number };
+
+function appReducer(state: AppState, action: AppAction): AppState {
+  switch (action.type) {
+    case "setFolders":
+      return { ...state, folders: action.folders };
+    case "setActiveFolderIndex":
+      return { ...state, activeFolderIndex: action.index };
+    case "setTracks":
+      return { ...state, tracks: action.tracks };
+    case "setLoading":
+      return { ...state, isLoadingTracks: action.loading };
+    case "setShowFolderModal":
+      return { ...state, showFolderModal: action.show };
+    case "setShowFolderPicker":
+      return { ...state, showFolderPicker: action.show };
+    case "folderAdded": {
+      const updated = state.folders.find((f) => f.id === action.folder.id)
+        ? state.folders
+        : [...state.folders, action.folder];
+      const idx = getFolders().findIndex((f) => f.id === action.folder.id);
+      return {
+        ...state,
+        folders: updated,
+        activeFolderIndex: idx >= 0 ? idx : state.activeFolderIndex,
+        showFolderModal: false,
+      };
+    }
+    case "syncActiveIndex": {
+      const allFolders = getFolders();
+      if (allFolders.length > 0 && state.activeFolderIndex >= allFolders.length) {
+        return { ...state, activeFolderIndex: allFolders.length - 1 };
+      }
+      return state;
+    }
+    case "removeFolder": {
+      const folder = state.folders[action.index];
+      if (!folder) return state;
+      removeFolder(folder.id);
+      const updated = getFolders();
+      const newIndex =
+        state.activeFolderIndex >= updated.length
+          ? Math.max(0, updated.length - 1)
+          : state.activeFolderIndex;
+      return {
+        ...state,
+        folders: updated,
+        activeFolderIndex: newIndex,
+        showFolderPicker: false,
+      };
+    }
+    default:
+      return state;
+  }
+}
+
+const initialState: AppState = {
+  folders: getFolders(),
+  activeFolderIndex: 0,
+  tracks: [],
+  isLoadingTracks: false,
+  showFolderModal: false,
+  showFolderPicker: false,
+};
+
 export default function App() {
-  const [folders, setFolders] = useState<DriveFolder[]>(() => getFolders());
-  const [activeFolderIndex, setActiveFolderIndex] = useState(0);
-  const [tracks, setTracks] = useState<DriveFile[]>([]);
-  const [isLoadingTracks, setIsLoadingTracks] = useState(false);
-  const [showFolderModal, setShowFolderModal] = useState(false);
-  const [showFolderPicker, setShowFolderPicker] = useState(false);
+  const [state, dispatch] = useReducer(appReducer, initialState);
+  const { folders, activeFolderIndex, tracks, isLoadingTracks, showFolderModal, showFolderPicker } = state;
 
   const activeFolder = folders[activeFolderIndex] ?? null;
   const { state: playerState, controls: playerControls } = useAudioPlayer(tracks);
@@ -22,61 +101,42 @@ export default function App() {
   // Load tracks for active folder
   useEffect(() => {
     if (!activeFolder) {
-      setTracks([]);
+      dispatch({ type: "setTracks", tracks: [] });
       return;
     }
     const cached = getTracks(activeFolder.id);
     if (cached) {
-      setTracks(cached);
+      dispatch({ type: "setTracks", tracks: cached });
     } else {
-      setIsLoadingTracks(true);
+      dispatch({ type: "setLoading", loading: true });
       fetchAudioFiles(activeFolder.id)
         .then((files) => {
           saveTracks(activeFolder.id, files);
-          setTracks(files);
+          dispatch({ type: "setTracks", tracks: files });
         })
-        .catch(() => setTracks([]))
-        .finally(() => setIsLoadingTracks(false));
+        .catch(() => dispatch({ type: "setTracks", tracks: [] }))
+        .finally(() => dispatch({ type: "setLoading", loading: false }));
     }
   }, [activeFolder?.id]);
 
   const handleFolderAdded = useCallback((folder: DriveFolder) => {
-    setFolders((prev) => {
-      const updated = prev.find((f) => f.id === folder.id) ? prev : [...prev, folder];
-      return updated;
-    });
-    setActiveFolderIndex((prev) => {
-      const idx = getFolders().findIndex((f) => f.id === folder.id);
-      return idx >= 0 ? idx : prev;
-    });
-    setShowFolderModal(false);
+    dispatch({ type: "folderAdded", folder });
   }, []);
 
   // After folder added, sync active folder index to the new one
   useEffect(() => {
-    const allFolders = getFolders();
-    if (allFolders.length > 0 && activeFolderIndex >= allFolders.length) {
-      setActiveFolderIndex(allFolders.length - 1);
-    }
+    dispatch({ type: "syncActiveIndex" });
   }, [folders]);
 
   const handleSelectFolder = (index: number) => {
-    setActiveFolderIndex(index);
-    setShowFolderPicker(false);
+    dispatch({ type: "setActiveFolderIndex", index });
+    dispatch({ type: "setShowFolderPicker", show: false });
     playerControls.stop();
   };
 
   const handleRemoveFolder = (index: number) => {
-    const folder = folders[index];
-    if (!folder) return;
-    removeFolder(folder.id);
-    const updated = getFolders();
-    setFolders(updated);
-    if (activeFolderIndex >= updated.length) {
-      setActiveFolderIndex(Math.max(0, updated.length - 1));
-    }
+    dispatch({ type: "removeFolder", index });
     playerControls.stop();
-    setShowFolderPicker(false);
   };
 
   const hasNoFolders = folders.length === 0;

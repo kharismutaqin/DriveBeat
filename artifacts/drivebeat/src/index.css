@@ -211,3 +211,13 @@
     touch-action: none;
   }
 }
+
+/* Reduced motion: respect OS preference for users who get dizzy or sick from animation */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
