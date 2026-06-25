@@ -420,7 +420,7 @@ export default function App() {
       )}
 
       {/* Mini player */}
-      <MiniPlayer state={playerState} controls={playerControls} />
+      <MiniPlayer state={playerState} controls={playerControls} trackRenames={trackRenames} />
     </div>
   );
 }

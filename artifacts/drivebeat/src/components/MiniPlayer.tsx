@@ -18,11 +18,12 @@ import type { PlayerState, PlayerControls } from "../hooks/useAudioPlayer";
 interface MiniPlayerProps {
   state: PlayerState;
   controls: PlayerControls;
+  trackRenames?: Record<string, string>;
 }
 
 const SPEED_STEP = 0.25;
 
-export function MiniPlayer({ state, controls }: MiniPlayerProps) {
+export function MiniPlayer({ state, controls, trackRenames = {} }: MiniPlayerProps) {
   const { currentTrack, isPlaying, currentTime, duration, playbackRate, isLoading } = state;
   const [showSpeed, setShowSpeed] = useState(false);
   const [showSleep, setShowSleep] = useState(false);
@@ -83,7 +84,7 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
   if (!currentTrack) return null;
 
   const progress = duration > 0 ? currentTime / duration : 0;
-  const displayName = cleanTrackName(currentTrack.name);
+  const displayName = trackRenames[currentTrack.id] ?? cleanTrackName(currentTrack.name);
   const isSleepActive = sleepRemaining > 0;
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
