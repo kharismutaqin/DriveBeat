@@ -113,7 +113,7 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
     >
       {/* Speed popup */}
       {showSpeed && (
-        <div className="absolute bottom-full left-4 right-4 mb-2 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+        <div className="absolute bottom-full left-4 right-4 mb-2 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl popup-slide-up origin-bottom">
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-3 pb-2">
             <p className="text-white/30 text-[10px] uppercase tracking-widest">Playback Speed</p>
@@ -163,7 +163,7 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
 
       {/* Sleep timer popup */}
       {showSleep && (
-        <div className="absolute bottom-full left-4 right-4 mb-2 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+        <div className="absolute bottom-full left-4 right-4 mb-2 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl popup-slide-up origin-bottom">
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-3 pb-2">
             <p className="text-white/30 text-[10px] uppercase tracking-widest">Sleep Timer</p>
