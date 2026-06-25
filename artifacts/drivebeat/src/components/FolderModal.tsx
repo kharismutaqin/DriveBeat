@@ -80,7 +80,14 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && canClose && onClose) {
+          onClose();
+        }
+      }}
+    >
       <div className="w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-5">
           <div>
