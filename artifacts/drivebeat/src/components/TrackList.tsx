@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Music2, Loader2, Pencil, Check, X } from "lucide-react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { Music2, Loader2, Pencil, Check, X, GripVertical } from "lucide-react";
 import type { DriveFile } from "../lib/drive";
 import { cleanTrackName } from "../lib/drive";
 
@@ -9,8 +9,10 @@ interface TrackListProps {
   isPlaying: boolean;
   isLoadingTracks: boolean;
   trackRenames: Record<string, string>;
+  isManageMode: boolean;
   onSelectTrack: (track: DriveFile, index: number) => void;
   onRenameTrack: (trackId: string, newName: string) => void;
+  onReorderTracks: (from: number, to: number) => void;
 }
 
 export function TrackList({
@@ -19,9 +21,12 @@ export function TrackList({
   isPlaying,
   isLoadingTracks,
   trackRenames,
+  isManageMode,
   onSelectTrack,
   onRenameTrack,
+  onReorderTracks,
 }: TrackListProps) {
+  // ── Rename state ─────────────────────────────────────────────
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -30,9 +35,13 @@ export function TrackList({
     if (editingId) inputRef.current?.focus();
   }, [editingId]);
 
+  // Exit rename mode when manage mode turns off
+  useEffect(() => {
+    if (!isManageMode) setEditingId(null);
+  }, [isManageMode]);
+
   const startEdit = (track: DriveFile) => {
-    const current = trackRenames[track.id] ?? cleanTrackName(track.name);
-    setEditValue(current);
+    setEditValue(trackRenames[track.id] ?? cleanTrackName(track.name));
     setEditingId(track.id);
   };
 
@@ -48,6 +57,67 @@ export function TrackList({
     if (e.key === "Escape") cancelEdit();
   };
 
+  // ── Drag-to-reorder state ────────────────────────────────────
+  // dragVisual: used for real-time visual reordering during touch drag
+  const [dragVisual, setDragVisual] = useState<{ from: number; current: number } | null>(null);
+  const draggingRef = useRef<{ from: number; current: number } | null>(null);
+  const touchStartYRef = useRef(0);
+  const rowHeightRef = useRef(56);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Attach non-passive touchmove so we can preventDefault (block page scroll)
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el || !isManageMode) return;
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!draggingRef.current) return;
+      e.preventDefault();
+      const dy = e.touches[0].clientY - touchStartYRef.current;
+      const rawIndex = draggingRef.current.from + Math.round(dy / rowHeightRef.current);
+      const clamped = Math.max(0, Math.min(tracks.length - 1, rawIndex));
+      if (clamped !== draggingRef.current.current) {
+        draggingRef.current = { ...draggingRef.current, current: clamped };
+        setDragVisual({ ...draggingRef.current });
+      }
+    };
+
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    return () => el.removeEventListener("touchmove", onTouchMove);
+  }, [isManageMode, tracks.length]);
+
+  const handleGripTouchStart = (e: React.TouchEvent, index: number) => {
+    touchStartYRef.current = e.touches[0].clientY;
+    // measure row height from list children
+    const children = listRef.current?.children;
+    if (children?.[index]) {
+      rowHeightRef.current = (children[index] as HTMLElement).offsetHeight || 56;
+    }
+    draggingRef.current = { from: index, current: index };
+    setDragVisual({ from: index, current: index });
+  };
+
+  const handleTouchEnd = () => {
+    const drag = draggingRef.current;
+    if (drag && drag.from !== drag.current) {
+      onReorderTracks(drag.from, drag.current);
+    }
+    draggingRef.current = null;
+    setDragVisual(null);
+  };
+
+  // Compute display order during drag
+  const displayedTracks = useMemo(() => {
+    if (!dragVisual || dragVisual.from === dragVisual.current) return tracks;
+    const arr = [...tracks];
+    const [item] = arr.splice(dragVisual.from, 1);
+    arr.splice(dragVisual.current, 0, item);
+    return arr;
+  }, [tracks, dragVisual]);
+
+  const draggingTrackId = dragVisual ? tracks[dragVisual.from]?.id : null;
+
+  // ── Render guards ────────────────────────────────────────────
   if (isLoadingTracks) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3 text-white/25">
@@ -67,26 +137,37 @@ export function TrackList({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-none">
+    <div
+      ref={listRef}
+      className="flex-1 overflow-y-auto scrollbar-none"
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+    >
       <ul className="divide-y divide-white/[0.04]">
-        {tracks.map((track, index) => {
+        {displayedTracks.map((track, displayIndex) => {
+          // original index in `tracks` (needed for onSelectTrack)
+          const originalIndex = tracks.findIndex((t) => t.id === track.id);
           const isActive = track.id === currentTrackId;
           const displayName = trackRenames[track.id] ?? cleanTrackName(track.name);
           const isEditing = editingId === track.id;
+          const isDraggingThis = track.id === draggingTrackId;
 
           return (
-            <li key={track.id} className="group relative">
-              {isEditing ? (
-                /* Rename row */
+            <li
+              key={track.id}
+              className={`transition-opacity ${isDraggingThis ? "opacity-40" : "opacity-100"}`}
+            >
+              {isManageMode && isEditing ? (
+                /* ── Rename row ── */
                 <div className="flex items-center gap-2 px-4 py-2.5">
-                  <div className="shrink-0 w-8" />
+                  <div className="shrink-0 w-7" />
                   <input
                     ref={inputRef}
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     onKeyDown={(e) => handleKeyDown(e, track.id)}
-                    className="flex-1 bg-white/6 text-white/85 text-sm rounded-lg px-2.5 py-1.5 outline-none
-                      focus:ring-1 focus:ring-white/20 font-[Outfit] min-w-0"
+                    className="flex-1 bg-white/6 text-white/85 text-sm rounded-lg px-2.5 py-1.5
+                      outline-none focus:ring-1 focus:ring-white/20 font-[Outfit] min-w-0"
                     data-testid={`input-rename-track-${track.id}`}
                   />
                   <button
@@ -105,50 +186,68 @@ export function TrackList({
                   </button>
                 </div>
               ) : (
-                /* Normal row */
-                <div className="relative flex items-center">
-                  <button
-                    onClick={() => onSelectTrack(track, index)}
-                    data-testid={`track-item-${track.id}`}
-                    className={`flex-1 flex items-center gap-3 px-4 py-3.5 text-left transition-colors active:bg-white/5 ${
-                      isActive ? "bg-white/[0.06]" : "hover:bg-white/[0.03]"
-                    }`}
-                  >
-                    <div className="shrink-0 w-8 flex items-center justify-center">
-                      {isActive && isPlaying ? (
-                        <PlayingIndicator />
-                      ) : (
-                        <span className={`text-xs tabular-nums ${isActive ? "text-white/60" : "text-white/18"}`}>
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                      )}
+                /* ── Normal / manage row ── */
+                <div className={`flex items-center ${isDraggingThis ? "bg-white/6 rounded-lg" : ""}`}>
+                  {/* Drag handle — only in manage mode */}
+                  {isManageMode && (
+                    <div
+                      className="pl-3 pr-1 py-4 text-white/20 active:text-white/50 touch-none cursor-grab active:cursor-grabbing shrink-0"
+                      onTouchStart={(e) => handleGripTouchStart(e, displayIndex)}
+                      data-testid={`grip-${track.id}`}
+                    >
+                      <GripVertical size={16} />
                     </div>
-                    <div className="flex-1 min-w-0 pr-8">
+                  )}
+
+                  {/* Track button */}
+                  <button
+                    onClick={() => !isManageMode && onSelectTrack(track, originalIndex)}
+                    data-testid={`track-item-${track.id}`}
+                    className={`flex-1 flex items-center gap-3 py-3.5 text-left transition-colors min-w-0
+                      ${isManageMode ? "pl-1 pr-2 active:bg-transparent cursor-default" : "px-4 active:bg-white/5"}
+                      ${isActive && !isManageMode ? "bg-white/[0.06]" : !isManageMode ? "hover:bg-white/[0.03]" : ""}
+                    `}
+                  >
+                    {/* Number / playing indicator */}
+                    {!isManageMode && (
+                      <div className="shrink-0 w-8 flex items-center justify-center">
+                        {isActive && isPlaying ? (
+                          <PlayingIndicator />
+                        ) : (
+                          <span className={`text-xs tabular-nums ${isActive ? "text-white/60" : "text-white/18"}`}>
+                            {String(originalIndex + 1).padStart(2, "0")}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Track name */}
+                    <div className="flex-1 min-w-0">
                       <p className={`text-sm truncate font-[Outfit] leading-snug ${
-                        isActive ? "text-white" : "text-white/65"
+                        isActive && !isManageMode ? "text-white" : "text-white/65"
                       }`}>
                         {displayName}
                       </p>
                     </div>
                   </button>
 
-                  {/* Rename pencil — visible on hover */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); startEdit(track); }}
-                    className="absolute right-3 p-1.5 text-white/0 group-hover:text-white/25
-                      hover:!text-white/65 transition-colors rounded-md hover:bg-white/6"
-                    data-testid={`button-rename-track-${track.id}`}
-                    title="Rename"
-                  >
-                    <Pencil size={12} />
-                  </button>
+                  {/* Rename pencil — visible only in manage mode */}
+                  {isManageMode && (
+                    <button
+                      onClick={() => startEdit(track)}
+                      className="p-2.5 text-white/25 hover:text-white/65 active:text-white/65 transition-colors shrink-0"
+                      data-testid={`button-rename-track-${track.id}`}
+                      title="Rename"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                  )}
                 </div>
               )}
             </li>
           );
         })}
       </ul>
-      {/* bottom padding so last item clears mini player */}
       <div className="h-36" />
     </div>
   );

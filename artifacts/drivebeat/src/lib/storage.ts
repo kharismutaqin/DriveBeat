@@ -23,6 +23,10 @@ export function saveFolder(folder: DriveFolder): void {
   }
 }
 
+export function saveFolderOrder(folders: DriveFolder[]): void {
+  localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders));
+}
+
 export function removeFolder(folderId: string): void {
   const folders = getFolders().filter((f) => f.id !== folderId);
   localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders));
