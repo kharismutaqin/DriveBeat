@@ -1,5 +1,5 @@
 import { useReducer, useEffect, useCallback, useState, useRef } from "react";
-import { ChevronDown, FolderOpen, Loader2, Plus } from "lucide-react";
+import { ChevronDown, FolderOpen, Loader2, Plus, Pencil, Check, X } from "lucide-react";
 import { FolderModal } from "./components/FolderModal";
 import { TrackList } from "./components/TrackList";
 import { MiniPlayer } from "./components/MiniPlayer";
@@ -10,6 +10,10 @@ import {
   saveTracks,
   removeFolder,
   saveFolder,
+  getTrackRenames,
+  setTrackRename,
+  getFolderRename,
+  setFolderRename,
 } from "./lib/storage";
 import {
   fetchAudioFiles,
@@ -116,7 +120,61 @@ export default function App() {
   const activeFolder = folders[activeFolderIndex] ?? null;
   const { state: playerState, controls: playerControls } = useAudioPlayer(tracks);
 
-  // Inline add folder state (for returning users)
+  // ── Track renames ──────────────────────────────────────────────
+  const [trackRenames, setTrackRenamesState] = useState<Record<string, string>>(
+    () => (activeFolder ? getTrackRenames(activeFolder.id) : {})
+  );
+
+  // Reload renames when active folder changes
+  useEffect(() => {
+    setTrackRenamesState(activeFolder ? getTrackRenames(activeFolder.id) : {});
+  }, [activeFolder?.id]);
+
+  const handleRenameTrack = (trackId: string, newName: string) => {
+    if (!activeFolder) return;
+    setTrackRename(activeFolder.id, trackId, newName);
+    setTrackRenamesState(getTrackRenames(activeFolder.id));
+  };
+
+  // ── Folder rename ───────────────────────────────────────────────
+  const [folderDisplayName, setFolderDisplayName] = useState<string>(
+    () => {
+      if (!activeFolder) return "";
+      return getFolderRename(activeFolder.id) ?? activeFolder.name;
+    }
+  );
+  const [isRenamingFolder, setIsRenamingFolder] = useState(false);
+  const [folderRenameValue, setFolderRenameValue] = useState("");
+  const folderRenameRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!activeFolder) return;
+    setFolderDisplayName(getFolderRename(activeFolder.id) ?? activeFolder.name);
+  }, [activeFolder?.id]);
+
+  const startFolderRename = () => {
+    setFolderRenameValue(folderDisplayName);
+    setIsRenamingFolder(true);
+    setTimeout(() => folderRenameRef.current?.focus(), 30);
+  };
+
+  const commitFolderRename = () => {
+    if (!activeFolder) return;
+    const trimmed = folderRenameValue.trim();
+    const name = trimmed || activeFolder.name;
+    setFolderRename(activeFolder.id, name);
+    setFolderDisplayName(name);
+    setIsRenamingFolder(false);
+  };
+
+  const cancelFolderRename = () => setIsRenamingFolder(false);
+
+  const handleFolderRenameKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") commitFolderRename();
+    if (e.key === "Escape") cancelFolderRename();
+  };
+
+  // ── Inline add folder ───────────────────────────────────────────
   const [showInlineAdd, setShowInlineAdd] = useState(false);
   const [inlineLink, setInlineLink] = useState("");
   const [inlineStatus, setInlineStatus] = useState<"idle" | "loading" | "error">("idle");
@@ -133,31 +191,13 @@ export default function App() {
   const handleInlineSubmit = async () => {
     const trimmed = inlineLink.trim();
     if (!trimmed) return;
-
-    if (!isApiKeyConfigured()) {
-      setInlineStatus("error");
-      return;
-    }
-
+    if (!isApiKeyConfigured()) { setInlineStatus("error"); return; }
     const folderId = extractFolderId(trimmed);
-    if (!folderId) {
-      setInlineStatus("error");
-      return;
-    }
-
+    if (!folderId) { setInlineStatus("error"); return; }
     setInlineStatus("loading");
-
     try {
-      const [name, files] = await Promise.all([
-        fetchFolderName(folderId),
-        fetchAudioFiles(folderId),
-      ]);
-
-      if (files.length === 0) {
-        setInlineStatus("error");
-        return;
-      }
-
+      const [name, files] = await Promise.all([fetchFolderName(folderId), fetchAudioFiles(folderId)]);
+      if (files.length === 0) { setInlineStatus("error"); return; }
       const folder: DriveFolder = { id: folderId, name, link: trimmed };
       saveFolder(folder);
       saveTracks(folderId, files);
@@ -173,7 +213,7 @@ export default function App() {
     if (e.key === "Escape") setShowInlineAdd(false);
   };
 
-  // Load tracks for active folder
+  // ── Track loading ───────────────────────────────────────────────
   useEffect(() => {
     if (!activeFolder) {
       dispatch({ type: "setTracks", tracks: [] });
@@ -213,13 +253,8 @@ export default function App() {
     playerControls.stop();
   };
 
-  const setShowFolderModal = (show: boolean) => {
-    dispatch({ type: "setShowFolderModal", show });
-  };
-
-  const setShowFolderPicker = (show: boolean) => {
-    dispatch({ type: "setShowFolderPicker", show });
-  };
+  const setShowFolderModal = (show: boolean) => dispatch({ type: "setShowFolderModal", show });
+  const setShowFolderPicker = (show: boolean) => dispatch({ type: "setShowFolderPicker", show });
 
   const hasNoFolders = folders.length === 0;
 
@@ -239,7 +274,7 @@ export default function App() {
         <header className="shrink-0 border-b border-white/[0.05]">
           <div className="flex items-center gap-2 px-4 pt-4 pb-3">
             {showInlineAdd ? (
-              /* Inline add bar — replaces folder name in header */
+              /* Inline add bar — replaces folder name */
               <div
                 className={`flex-1 flex items-center bg-white/6 rounded-xl pl-3 pr-1 h-10 min-w-0 transition-colors popup-slide-up ${
                   inlineStatus === "error"
@@ -251,17 +286,13 @@ export default function App() {
                   ref={inlineInputRef}
                   type="url"
                   value={inlineLink}
-                  onChange={(e) => {
-                    setInlineLink(e.target.value);
-                    setInlineStatus("idle");
-                  }}
+                  onChange={(e) => { setInlineLink(e.target.value); setInlineStatus("idle"); }}
                   onKeyDown={handleInlineKeyDown}
                   placeholder="Paste here..."
                   disabled={inlineStatus === "loading"}
                   className="flex-1 bg-transparent text-white/75 text-sm placeholder:text-white/25 outline-none min-w-0"
                   data-testid="input-inline-folder-link"
                 />
-                {/* Folder icon button inside the bar */}
                 <button
                   onClick={handleInlineSubmit}
                   disabled={inlineStatus === "loading" || !inlineLink.trim()}
@@ -270,45 +301,62 @@ export default function App() {
                     hover:bg-white/10 hover:text-white/80 transition-colors
                     disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
                 >
-                  {inlineStatus === "loading" ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <FolderOpen size={14} />
-                  )}
+                  {inlineStatus === "loading" ? <Loader2 size={14} className="animate-spin" /> : <FolderOpen size={14} />}
+                </button>
+              </div>
+            ) : isRenamingFolder ? (
+              /* Folder rename input */
+              <div className="flex-1 flex items-center gap-1.5 min-w-0 popup-slide-up">
+                <input
+                  ref={folderRenameRef}
+                  value={folderRenameValue}
+                  onChange={(e) => setFolderRenameValue(e.target.value)}
+                  onKeyDown={handleFolderRenameKey}
+                  className="flex-1 bg-white/6 text-white/85 text-sm font-medium rounded-lg px-2.5 py-1.5
+                    outline-none focus:ring-1 focus:ring-white/20 min-w-0"
+                  data-testid="input-rename-folder"
+                />
+                <button onClick={commitFolderRename} className="p-1.5 text-white/50 hover:text-white/90 transition-colors shrink-0" data-testid="button-rename-folder-confirm">
+                  <Check size={14} />
+                </button>
+                <button onClick={cancelFolderRename} className="p-1.5 text-white/30 hover:text-white/65 transition-colors shrink-0" data-testid="button-rename-folder-cancel">
+                  <X size={14} />
                 </button>
               </div>
             ) : (
-              /* Folder name */
-              <div className="flex-1 min-w-0">
+              /* Normal folder name + pencil */
+              <div className="flex-1 min-w-0 flex items-center gap-1.5 group">
                 {folders.length === 1 ? (
-                  <h1
-                    className="text-white/75 text-sm font-medium truncate"
-                    data-testid="text-folder-name"
-                  >
-                    {activeFolder?.name ?? "DriveBeat"}
+                  <h1 className="text-white/75 text-sm font-medium truncate" data-testid="text-folder-name">
+                    {folderDisplayName}
                   </h1>
                 ) : (
                   <button
                     onClick={() => setShowFolderPicker(!showFolderPicker)}
-                    className="flex items-center gap-1.5 text-white/75 text-sm font-medium hover:text-white/90 transition-colors"
+                    className="flex items-center gap-1.5 text-white/75 text-sm font-medium hover:text-white/90 transition-colors min-w-0"
                     data-testid="button-folder-picker"
                   >
-                    <span className="truncate">{activeFolder?.name ?? "DriveBeat"}</span>
+                    <span className="truncate">{folderDisplayName}</span>
                     <ChevronDown
                       size={13}
                       className={`shrink-0 text-white/30 transition-transform ${showFolderPicker ? "rotate-180" : ""}`}
                     />
                   </button>
                 )}
+                <button
+                  onClick={startFolderRename}
+                  className="p-1 text-white/0 group-hover:text-white/25 hover:!text-white/65 transition-colors rounded shrink-0"
+                  data-testid="button-rename-folder"
+                  title="Rename folder"
+                >
+                  <Pencil size={11} />
+                </button>
               </div>
             )}
 
-            {/* Toggle button: Plus rotates 45deg to become X */}
+            {/* Plus / X toggle */}
             <button
-              onClick={() => {
-                setShowInlineAdd(!showInlineAdd);
-                setShowFolderPicker(false);
-              }}
+              onClick={() => { setShowInlineAdd(!showInlineAdd); setShowFolderPicker(false); setIsRenamingFolder(false); }}
               data-testid="button-add-folder"
               className="text-white/30 hover:text-white/65 transition-colors p-1.5 rounded-lg hover:bg-white/6 shrink-0"
               title={showInlineAdd ? "Close" : "Add new folder"}
@@ -325,28 +373,29 @@ export default function App() {
       {/* Folder picker dropdown */}
       {showFolderPicker && folders.length > 1 && (
         <div className="shrink-0 border-b border-white/[0.05] bg-[#060606]">
-          {folders.map((folder, index) => (
-            <div key={folder.id} className="flex items-center group">
-              <button
-                onClick={() => handleSelectFolder(index)}
-                data-testid={`button-folder-${folder.id}`}
-                className={`flex-1 text-left px-4 py-3 text-sm transition-colors ${
-                  index === activeFolderIndex
-                    ? "text-white/90"
-                    : "text-white/40 hover:text-white/70"
-                }`}
-              >
-                {folder.name}
-              </button>
-              <button
-                onClick={() => handleRemoveFolder(index)}
-                data-testid={`button-remove-folder-${folder.id}`}
-                className="px-4 py-3 text-white/15 hover:text-red-400/60 transition-colors opacity-0 group-hover:opacity-100 text-xs"
-              >
-                remove
-              </button>
-            </div>
-          ))}
+          {folders.map((folder, index) => {
+            const displayName = getFolderRename(folder.id) ?? folder.name;
+            return (
+              <div key={folder.id} className="flex items-center group">
+                <button
+                  onClick={() => handleSelectFolder(index)}
+                  data-testid={`button-folder-${folder.id}`}
+                  className={`flex-1 text-left px-4 py-3 text-sm transition-colors ${
+                    index === activeFolderIndex ? "text-white/90" : "text-white/40 hover:text-white/70"
+                  }`}
+                >
+                  {displayName}
+                </button>
+                <button
+                  onClick={() => handleRemoveFolder(index)}
+                  data-testid={`button-remove-folder-${folder.id}`}
+                  className="px-4 py-3 text-white/15 hover:text-red-400/60 transition-colors opacity-0 group-hover:opacity-100 text-xs"
+                >
+                  remove
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -357,7 +406,9 @@ export default function App() {
           currentTrackId={playerState.currentTrack?.id ?? null}
           isPlaying={playerState.isPlaying}
           isLoadingTracks={isLoadingTracks}
+          trackRenames={trackRenames}
           onSelectTrack={(track, index) => playerControls.play(track, index)}
+          onRenameTrack={handleRenameTrack}
         />
       )}
 
