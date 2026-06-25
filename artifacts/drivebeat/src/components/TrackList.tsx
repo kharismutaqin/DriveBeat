@@ -60,7 +60,7 @@ export function TrackList({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm truncate font-[Space Mono] leading-snug ${
+                  <p className={`text-sm truncate font-[Outfit] leading-snug ${
                     isActive ? "text-white" : "text-white/65"
                   }`}>
                     {displayName}
