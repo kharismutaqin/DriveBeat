@@ -1,11 +1,16 @@
 import { useReducer, useEffect, useCallback, useState, useRef } from "react";
-import { ChevronDown, FolderOpen, X, Loader2 } from "lucide-react";
+import { ChevronDown, FolderOpen, X, Loader2, Plus } from "lucide-react";
 import { FolderModal } from "./components/FolderModal";
 import { TrackList } from "./components/TrackList";
 import { MiniPlayer } from "./components/MiniPlayer";
 import { useAudioPlayer } from "./hooks/useAudioPlayer";
 import { getFolders, getTracks, saveTracks, removeFolder } from "./lib/storage";
-import { fetchAudioFiles, extractFolderId, fetchFolderName, isApiKeyConfigured } from "./lib/drive";
+import {
+  fetchAudioFiles,
+  extractFolderId,
+  fetchFolderName,
+  isApiKeyConfigured,
+} from "./lib/drive";
 import { saveFolder } from "./lib/storage";
 import type { DriveFile, DriveFolder } from "./lib/drive";
 
@@ -57,7 +62,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
     }
     case "syncActiveIndex": {
       const allFolders = getFolders();
-      if (allFolders.length > 0 && state.activeFolderIndex >= allFolders.length) {
+      if (
+        allFolders.length > 0 &&
+        state.activeFolderIndex >= allFolders.length
+      ) {
         return { ...state, activeFolderIndex: allFolders.length - 1 };
       }
       return state;
@@ -94,15 +102,25 @@ const initialState: AppState = {
 
 export default function App() {
   const [state, dispatch] = useReducer(appReducer, initialState);
-  const { folders, activeFolderIndex, tracks, isLoadingTracks, showFolderModal, showFolderPicker } = state;
+  const {
+    folders,
+    activeFolderIndex,
+    tracks,
+    isLoadingTracks,
+    showFolderModal,
+    showFolderPicker,
+  } = state;
 
   const activeFolder = folders[activeFolderIndex] ?? null;
-  const { state: playerState, controls: playerControls } = useAudioPlayer(tracks);
+  const { state: playerState, controls: playerControls } =
+    useAudioPlayer(tracks);
 
   // Inline add folder state (for returning users)
   const [showInlineAdd, setShowInlineAdd] = useState(false);
   const [inlineLink, setInlineLink] = useState("");
-  const [inlineStatus, setInlineStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [inlineStatus, setInlineStatus] = useState<
+    "idle" | "loading" | "error"
+  >("idle");
   const inlineInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -220,17 +238,66 @@ export default function App() {
       {/* Header */}
       {!hasNoFolders && (
         <header className="shrink-0 border-b border-white/[0.05]">
-          {showInlineAdd ? (
-            /* Inline add folder row */
-            <div className="flex items-center gap-2 px-4 pt-4 pb-3 popup-slide-up">
-              <div className={`flex-1 flex items-center bg-white/6 rounded-xl px-3 h-10 transition-colors ${
-                inlineStatus === "error" ? "ring-1 ring-red-500/40" : "focus-within:ring-1 focus-within:ring-white/20"
-              }`}>
+          {/* Normal header row — always visible */}
+          <div className="flex items-center justify-between px-4 pt-4 pb-3">
+            {folders.length === 1 ? (
+              <h1
+                className="text-white/75 text-sm font-medium truncate max-w-[80%]"
+                data-testid="text-folder-name"
+              >
+                {activeFolder?.name ?? "DriveBeat"}
+              </h1>
+            ) : (
+              <button
+                onClick={() => setShowFolderPicker(!showFolderPicker)}
+                className="flex items-center gap-1.5 text-white/75 text-sm font-medium max-w-[80%] hover:text-white/90 transition-colors"
+                data-testid="button-folder-picker"
+              >
+                <span className="truncate">
+                  {activeFolder?.name ?? "DriveBeat"}
+                </span>
+                <ChevronDown
+                  size={13}
+                  className={`shrink-0 text-white/30 transition-transform ${showFolderPicker ? "rotate-180" : ""}`}
+                />
+              </button>
+            )}
+
+            {/* Toggle button: Plus rotates 45deg to become X */}
+            <button
+              onClick={() => {
+                setShowInlineAdd(!showInlineAdd);
+                setShowFolderPicker(false);
+              }}
+              data-testid="button-add-folder"
+              className="text-white/30 hover:text-white/65 transition-colors p-1.5 rounded-lg hover:bg-white/6"
+              title={showInlineAdd ? "Close" : "Add new folder"}
+            >
+              <Plus
+                size={17}
+                className={`transition-transform duration-300 ${showInlineAdd ? "rotate-45" : "rotate-0"}`}
+              />
+            </button>
+          </div>
+
+          {/* Inline add folder panel — appears below header row */}
+          {showInlineAdd && (
+            <div className="flex items-center gap-2 px-2 pt-1 pb-3 popup-slide-up">
+              <div
+                className={`flex-1 flex items-center bg-white/6 rounded-xl px-3 h-10 transition-colors ${
+                  inlineStatus === "error"
+                    ? "ring-1 ring-red-500/40"
+                    : "focus-within:ring-1 focus-within:ring-white/20"
+                }`}
+              >
                 <input
                   ref={inlineInputRef}
                   type="url"
                   value={inlineLink}
-                  onChange={(e) => { setInlineLink(e.target.value); setInlineStatus("idle"); }}
+                  onChange={(e) => {
+                    setInlineLink(e.target.value);
+                    setInlineStatus("idle");
+                  }}
                   onKeyDown={handleInlineKeyDown}
                   placeholder="Paste here..."
                   disabled={inlineStatus === "loading"}
@@ -247,48 +314,11 @@ export default function App() {
                   hover:bg-white/15 hover:text-white/90 transition-colors
                   disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
               >
-                {inlineStatus === "loading"
-                  ? <Loader2 size={16} className="animate-spin" />
-                  : <FolderOpen size={16} />
-                }
-              </button>
-
-              <button
-                onClick={() => setShowInlineAdd(false)}
-                data-testid="button-inline-close"
-                className="text-white/30 hover:text-white/65 transition-colors p-1.5 shrink-0"
-              >
-                <X size={17} />
-              </button>
-            </div>
-          ) : (
-            /* Normal header row */
-            <div className="flex items-center justify-between px-4 pt-4 pb-3">
-              {folders.length === 1 ? (
-                <h1 className="text-white/75 text-sm font-medium truncate max-w-[80%]" data-testid="text-folder-name">
-                  {activeFolder?.name ?? "DriveBeat"}
-                </h1>
-              ) : (
-                <button
-                  onClick={() => setShowFolderPicker(!showFolderPicker)}
-                  className="flex items-center gap-1.5 text-white/75 text-sm font-medium max-w-[80%] hover:text-white/90 transition-colors"
-                  data-testid="button-folder-picker"
-                >
-                  <span className="truncate">{activeFolder?.name ?? "DriveBeat"}</span>
-                  <ChevronDown
-                    size={13}
-                    className={`shrink-0 text-white/30 transition-transform ${showFolderPicker ? "rotate-180" : ""}`}
-                  />
-                </button>
-              )}
-
-              <button
-                onClick={() => { setShowInlineAdd(true); setShowFolderPicker(false); }}
-                data-testid="button-add-folder"
-                className="text-white/30 hover:text-white/65 transition-colors p-1.5 rounded-lg hover:bg-white/6"
-                title="Add new folder"
-              >
-                <FolderOpen size={17} />
+                {inlineStatus === "loading" ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <FolderOpen size={16} />
+                )}
               </button>
             </div>
           )}
@@ -304,7 +334,9 @@ export default function App() {
                 onClick={() => handleSelectFolder(index)}
                 data-testid={`button-folder-${folder.id}`}
                 className={`flex-1 text-left px-4 py-3 text-sm transition-colors ${
-                  index === activeFolderIndex ? "text-white/90" : "text-white/40 hover:text-white/70"
+                  index === activeFolderIndex
+                    ? "text-white/90"
+                    : "text-white/40 hover:text-white/70"
                 }`}
               >
                 {folder.name}
