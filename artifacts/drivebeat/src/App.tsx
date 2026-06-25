@@ -1,17 +1,22 @@
 import { useReducer, useEffect, useCallback, useState, useRef } from "react";
-import { ChevronDown, FolderOpen, X, Loader2, Plus } from "lucide-react";
+import { ChevronDown, FolderOpen, Loader2, Plus } from "lucide-react";
 import { FolderModal } from "./components/FolderModal";
 import { TrackList } from "./components/TrackList";
 import { MiniPlayer } from "./components/MiniPlayer";
 import { useAudioPlayer } from "./hooks/useAudioPlayer";
-import { getFolders, getTracks, saveTracks, removeFolder } from "./lib/storage";
+import {
+  getFolders,
+  getTracks,
+  saveTracks,
+  removeFolder,
+  saveFolder,
+} from "./lib/storage";
 import {
   fetchAudioFiles,
   extractFolderId,
   fetchFolderName,
   isApiKeyConfigured,
 } from "./lib/drive";
-import { saveFolder } from "./lib/storage";
 import type { DriveFile, DriveFolder } from "./lib/drive";
 
 interface AppState {
@@ -62,10 +67,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
     }
     case "syncActiveIndex": {
       const allFolders = getFolders();
-      if (
-        allFolders.length > 0 &&
-        state.activeFolderIndex >= allFolders.length
-      ) {
+      if (allFolders.length > 0 && state.activeFolderIndex >= allFolders.length) {
         return { ...state, activeFolderIndex: allFolders.length - 1 };
       }
       return state;
@@ -112,15 +114,12 @@ export default function App() {
   } = state;
 
   const activeFolder = folders[activeFolderIndex] ?? null;
-  const { state: playerState, controls: playerControls } =
-    useAudioPlayer(tracks);
+  const { state: playerState, controls: playerControls } = useAudioPlayer(tracks);
 
   // Inline add folder state (for returning users)
   const [showInlineAdd, setShowInlineAdd] = useState(false);
   const [inlineLink, setInlineLink] = useState("");
-  const [inlineStatus, setInlineStatus] = useState<
-    "idle" | "loading" | "error"
-  >("idle");
+  const [inlineStatus, setInlineStatus] = useState<"idle" | "loading" | "error">("idle");
   const inlineInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -238,53 +237,11 @@ export default function App() {
       {/* Header */}
       {!hasNoFolders && (
         <header className="shrink-0 border-b border-white/[0.05]">
-          {/* Normal header row — always visible */}
-          <div className="flex items-center justify-between px-4 pt-4 pb-3">
-            {folders.length === 1 ? (
-              <h1
-                className="text-white/75 text-sm font-medium truncate max-w-[80%]"
-                data-testid="text-folder-name"
-              >
-                {activeFolder?.name ?? "DriveBeat"}
-              </h1>
-            ) : (
-              <button
-                onClick={() => setShowFolderPicker(!showFolderPicker)}
-                className="flex items-center gap-1.5 text-white/75 text-sm font-medium max-w-[80%] hover:text-white/90 transition-colors"
-                data-testid="button-folder-picker"
-              >
-                <span className="truncate">
-                  {activeFolder?.name ?? "DriveBeat"}
-                </span>
-                <ChevronDown
-                  size={13}
-                  className={`shrink-0 text-white/30 transition-transform ${showFolderPicker ? "rotate-180" : ""}`}
-                />
-              </button>
-            )}
-
-            {/* Toggle button: Plus rotates 45deg to become X */}
-            <button
-              onClick={() => {
-                setShowInlineAdd(!showInlineAdd);
-                setShowFolderPicker(false);
-              }}
-              data-testid="button-add-folder"
-              className="text-white/30 hover:text-white/65 transition-colors p-1.5 rounded-lg hover:bg-white/6"
-              title={showInlineAdd ? "Close" : "Add new folder"}
-            >
-              <Plus
-                size={17}
-                className={`transition-transform duration-300 ${showInlineAdd ? "rotate-45" : "rotate-0"}`}
-              />
-            </button>
-          </div>
-
-          {/* Inline add folder panel — appears below header row */}
-          {showInlineAdd && (
-            <div className="flex items-center gap-2 px-2 pt-1 pb-3 popup-slide-up">
+          <div className="flex items-center gap-2 px-4 pt-4 pb-3">
+            {showInlineAdd ? (
+              /* Inline add bar — replaces folder name in header */
               <div
-                className={`flex-1 flex items-center bg-white/6 rounded-xl px-3 h-10 transition-colors ${
+                className={`flex-1 flex items-center bg-white/6 rounded-xl pl-3 pr-1 h-10 min-w-0 transition-colors popup-slide-up ${
                   inlineStatus === "error"
                     ? "ring-1 ring-red-500/40"
                     : "focus-within:ring-1 focus-within:ring-white/20"
@@ -304,24 +261,64 @@ export default function App() {
                   className="flex-1 bg-transparent text-white/75 text-sm placeholder:text-white/25 outline-none min-w-0"
                   data-testid="input-inline-folder-link"
                 />
+                {/* Folder icon button inside the bar */}
+                <button
+                  onClick={handleInlineSubmit}
+                  disabled={inlineStatus === "loading" || !inlineLink.trim()}
+                  data-testid="button-inline-load-folder"
+                  className="h-8 w-8 flex items-center justify-center rounded-lg text-white/55
+                    hover:bg-white/10 hover:text-white/80 transition-colors
+                    disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+                >
+                  {inlineStatus === "loading" ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <FolderOpen size={14} />
+                  )}
+                </button>
               </div>
-
-              <button
-                onClick={handleInlineSubmit}
-                disabled={inlineStatus === "loading" || !inlineLink.trim()}
-                data-testid="button-inline-load-folder"
-                className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 text-white/60
-                  hover:bg-white/15 hover:text-white/90 transition-colors
-                  disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
-              >
-                {inlineStatus === "loading" ? (
-                  <Loader2 size={16} className="animate-spin" />
+            ) : (
+              /* Folder name */
+              <div className="flex-1 min-w-0">
+                {folders.length === 1 ? (
+                  <h1
+                    className="text-white/75 text-sm font-medium truncate"
+                    data-testid="text-folder-name"
+                  >
+                    {activeFolder?.name ?? "DriveBeat"}
+                  </h1>
                 ) : (
-                  <FolderOpen size={16} />
+                  <button
+                    onClick={() => setShowFolderPicker(!showFolderPicker)}
+                    className="flex items-center gap-1.5 text-white/75 text-sm font-medium hover:text-white/90 transition-colors"
+                    data-testid="button-folder-picker"
+                  >
+                    <span className="truncate">{activeFolder?.name ?? "DriveBeat"}</span>
+                    <ChevronDown
+                      size={13}
+                      className={`shrink-0 text-white/30 transition-transform ${showFolderPicker ? "rotate-180" : ""}`}
+                    />
+                  </button>
                 )}
-              </button>
-            </div>
-          )}
+              </div>
+            )}
+
+            {/* Toggle button: Plus rotates 45deg to become X */}
+            <button
+              onClick={() => {
+                setShowInlineAdd(!showInlineAdd);
+                setShowFolderPicker(false);
+              }}
+              data-testid="button-add-folder"
+              className="text-white/30 hover:text-white/65 transition-colors p-1.5 rounded-lg hover:bg-white/6 shrink-0"
+              title={showInlineAdd ? "Close" : "Add new folder"}
+            >
+              <Plus
+                size={17}
+                className={`transition-transform duration-300 ${showInlineAdd ? "rotate-45" : "rotate-0"}`}
+              />
+            </button>
+          </div>
         </header>
       )}
 
