@@ -31,19 +31,6 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
   const sleepTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sleepIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Dismiss popups on outside clicks
-  const playerRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (playerRef.current && !playerRef.current.contains(e.target as Node)) {
-        setShowSpeed(false);
-        setShowSleep(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
   const startSleepTimer = (totalSeconds: number) => {
     if (sleepTimerRef.current) clearTimeout(sleepTimerRef.current);
     if (sleepIntervalRef.current) clearInterval(sleepIntervalRef.current);
@@ -107,26 +94,25 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
 
   return (
     <div
-      ref={playerRef}
       className="fixed bottom-0 left-0 right-0 z-40 bg-[#0d0d0d] border-t border-white/[0.07] safe-area-bottom"
       data-testid="mini-player"
     >
-      {/* Speed popup */}
+      {/* Speed panel — replaces mini player content */}
       {showSpeed && (
-        <div className="absolute bottom-full left-4 right-4 mb-2 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl popup-slide-up origin-bottom">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 pt-3 pb-2">
-            <p className="text-white/30 text-[10px] uppercase tracking-widest">Playback Speed</p>
+        <div className="px-4 pt-3 pb-4 popup-slide-up">
+          {/* Header row */}
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-white/40 text-[10px] uppercase tracking-widest">Playback Speed</p>
             <button
               onClick={() => setShowSpeed(false)}
               className="text-white/25 hover:text-white/60 transition-colors p-0.5"
             >
-              <X size={12} />
+              <X size={14} />
             </button>
           </div>
 
-          {/* Speed adjuster row */}
-          <div className="flex items-center justify-center gap-4 px-4 pb-3">
+          {/* Speed adjuster */}
+          <div className="flex items-center justify-center gap-4 mb-3">
             <button
               onClick={() => controls.setPlaybackRate(Math.max(0.25, Number((playbackRate - SPEED_STEP).toFixed(2))))}
               className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/8 text-white/55 hover:bg-white/15 hover:text-white/80 transition-colors"
@@ -148,41 +134,36 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
             </button>
           </div>
 
-          {/* Reset button */}
-          <div className="px-4 pb-4">
-            <button
-              onClick={() => controls.setPlaybackRate(1)}
-              data-testid="button-speed-reset"
-              className="w-full h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors bg-white/8 text-white/55 hover:bg-white/12 hover:text-white/80"
-            >
-              Reset
-            </button>
-          </div>
+          {/* Reset */}
+          <button
+            onClick={() => controls.setPlaybackRate(1)}
+            data-testid="button-speed-reset"
+            className="w-full h-9 rounded-lg flex items-center justify-center text-sm font-medium transition-colors bg-white/8 text-white/55 hover:bg-white/12 hover:text-white/80"
+          >
+            Reset
+          </button>
         </div>
       )}
 
-      {/* Sleep timer popup */}
+      {/* Sleep timer panel — replaces mini player content */}
       {showSleep && (
-        <div className="absolute bottom-full left-4 right-4 mb-2 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl popup-slide-up origin-bottom">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 pt-3 pb-2">
-            <p className="text-white/30 text-[10px] uppercase tracking-widest">Sleep Timer</p>
+        <div className="px-4 pt-3 pb-4 popup-slide-up">
+          {/* Header row */}
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-white/40 text-[10px] uppercase tracking-widest">Sleep Timer</p>
             <button
               onClick={() => setShowSleep(false)}
               className="text-white/25 hover:text-white/60 transition-colors p-0.5"
             >
-              <X size={12} />
+              <X size={14} />
             </button>
           </div>
 
-          {/* Time picker: MM : SS — countdown runs live in the picker */}
-          <div className="flex items-center justify-center gap-2 px-4 py-3">
-            {/* Minutes column */}
+          {/* Time picker + action buttons */}
+          <div className="flex items-center justify-center gap-2">
+            {/* Minutes */}
             <div className="flex flex-col items-center gap-1">
-              <button
-                onClick={() => adjustTime(60)}
-                className="text-white/35 hover:text-white/70 transition-colors p-0.5"
-              >
+              <button onClick={() => adjustTime(60)} className="text-white/35 hover:text-white/70 transition-colors p-0.5">
                 <ChevronUp size={14} />
               </button>
               <div className="w-12 h-10 bg-white/10 rounded-lg flex items-center justify-center">
@@ -190,23 +171,16 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
                   {String(Math.floor((isSleepActive ? sleepRemaining : sleepTotalSeconds) / 60)).padStart(2, "0")}
                 </span>
               </div>
-              <button
-                onClick={() => adjustTime(-60)}
-                className="text-white/35 hover:text-white/70 transition-colors p-0.5"
-              >
+              <button onClick={() => adjustTime(-60)} className="text-white/35 hover:text-white/70 transition-colors p-0.5">
                 <ChevronUp size={14} className="rotate-180" />
               </button>
             </div>
 
-            {/* Colon separator */}
             <span className="text-white/25 text-lg font-medium pb-0.5">:</span>
 
-            {/* Seconds column */}
+            {/* Seconds */}
             <div className="flex flex-col items-center gap-1">
-              <button
-                onClick={() => adjustTime(10)}
-                className="text-white/35 hover:text-white/70 transition-colors p-0.5"
-              >
+              <button onClick={() => adjustTime(10)} className="text-white/35 hover:text-white/70 transition-colors p-0.5">
                 <ChevronUp size={14} />
               </button>
               <div className="w-12 h-10 bg-white/10 rounded-lg flex items-center justify-center">
@@ -214,10 +188,7 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
                   {String((isSleepActive ? sleepRemaining : sleepTotalSeconds) % 60).padStart(2, "0")}
                 </span>
               </div>
-              <button
-                onClick={() => adjustTime(-10)}
-                className="text-white/35 hover:text-white/70 transition-colors p-0.5"
-              >
+              <button onClick={() => adjustTime(-10)} className="text-white/35 hover:text-white/70 transition-colors p-0.5">
                 <ChevronUp size={14} className="rotate-180" />
               </button>
             </div>
@@ -249,122 +220,125 @@ export function MiniPlayer({ state, controls }: MiniPlayerProps) {
         </div>
       )}
 
-      <div className="px-4 pt-3 pb-4">
-        {/* Track name — centered */}
-        <p className="text-white/80 text-sm font-medium text-center leading-snug mb-3" data-testid="text-track-name">
-          {displayName}
-        </p>
+      {/* Normal player — hidden when a panel is open */}
+      {!showSpeed && !showSleep && (
+        <div className="px-4 pt-3 pb-4">
+          {/* Track name */}
+          <p className="text-white/80 text-sm font-medium text-center leading-snug mb-3" data-testid="text-track-name">
+            {displayName}
+          </p>
 
-        {/* Duration left — progress bar — duration right */}
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-[11px] text-white/30 tabular-nums shrink-0 w-10 text-right" data-testid="text-current-time">
-            {formatDuration(currentTime)}
-          </span>
-          <div
-            className="flex-1 h-[2px] bg-white/8 cursor-pointer relative group rounded-full"
-            onClick={handleSeek}
-            data-testid="progress-bar"
-          >
+          {/* Progress bar */}
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-[11px] text-white/30 tabular-nums shrink-0 w-10 text-right" data-testid="text-current-time">
+              {formatDuration(currentTime)}
+            </span>
             <div
-              className="h-full bg-white/70 rounded-full transition-none"
-              style={{ width: `${progress * 100}%` }}
-            />
-            <div
-              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1/2"
-              style={{ left: `${progress * 100}%` }}
-            />
-          </div>
-          <span className="text-[11px] text-white/30 tabular-nums shrink-0 w-10" data-testid="text-duration">
-            {formatDuration(duration)}
-          </span>
-        </div>
-
-        {/* Controls row */}
-        <div className="flex items-center justify-between">
-          {/* Left: speed */}
-          <button
-            onClick={() => { setShowSpeed(!showSpeed); setShowSleep(false); }}
-            data-testid="button-speed"
-            className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
-              showSpeed || playbackRate !== 1
-                ? "bg-white/12 text-white/80"
-                : "bg-transparent text-white/30 hover:text-white/55"
-            }`}
-          >
-            <Gauge size={16} />
-          </button>
-
-          {/* Center: player controls */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => controls.seekBy(-5)}
-              data-testid="button-seek-back"
-              className="text-white/40 hover:text-white/75 transition-colors p-1.5 rounded-lg hover:bg-white/6"
-              title="Rewind 5 seconds"
+              className="flex-1 h-[2px] bg-white/8 cursor-pointer relative group rounded-full"
+              onClick={handleSeek}
+              data-testid="progress-bar"
             >
-              <span className="flex items-center gap-0.5">
-                <SkipBack size={14} />
-                <span className="text-[10px] font-medium">5</span>
-              </span>
-            </button>
-
-            <button
-              onClick={controls.prevTrack}
-              data-testid="button-prev"
-              className="text-white/50 hover:text-white/80 transition-colors p-1.5 rounded-lg hover:bg-white/6"
-            >
-              <SkipBack size={18} />
-            </button>
-
-            <button
-              onClick={controls.togglePlayPause}
-              data-testid="button-play-pause"
-              className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center transition-transform active:scale-95 hover:bg-white/90"
-            >
-              {isLoading ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : isPlaying ? (
-                <Pause size={18} fill="black" />
-              ) : (
-                <Play size={18} fill="black" className="ml-0.5" />
-              )}
-            </button>
-
-            <button
-              onClick={controls.nextTrack}
-              data-testid="button-next"
-              className="text-white/50 hover:text-white/80 transition-colors p-1.5 rounded-lg hover:bg-white/6"
-            >
-              <SkipForward size={18} />
-            </button>
-
-            <button
-              onClick={() => controls.seekBy(5)}
-              data-testid="button-seek-forward"
-              className="text-white/40 hover:text-white/75 transition-colors p-1.5 rounded-lg hover:bg-white/6"
-              title="Forward 5 seconds"
-            >
-              <span className="flex items-center gap-0.5">
-                <span className="text-[10px] font-medium">5</span>
-                <SkipForward size={14} />
-              </span>
-            </button>
+              <div
+                className="h-full bg-white/70 rounded-full transition-none"
+                style={{ width: `${progress * 100}%` }}
+              />
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1/2"
+                style={{ left: `${progress * 100}%` }}
+              />
+            </div>
+            <span className="text-[11px] text-white/30 tabular-nums shrink-0 w-10" data-testid="text-duration">
+              {formatDuration(duration)}
+            </span>
           </div>
 
-          {/* Right: sleep */}
-          <button
-            onClick={() => { setShowSleep(!showSleep); setShowSpeed(false); }}
-            data-testid="button-sleep"
-            className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
-              showSleep || isSleepActive
-                ? "bg-white/12 text-white/80"
-                : "bg-transparent text-white/30 hover:text-white/55"
-            }`}
-          >
-            <Timer size={16} />
-          </button>
+          {/* Controls row */}
+          <div className="flex items-center justify-between">
+            {/* Speed toggle */}
+            <button
+              onClick={() => { setShowSpeed(true); setShowSleep(false); }}
+              data-testid="button-speed"
+              className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
+                playbackRate !== 1
+                  ? "bg-white/12 text-white/80"
+                  : "bg-transparent text-white/30 hover:text-white/55"
+              }`}
+            >
+              <Gauge size={16} />
+            </button>
+
+            {/* Playback controls */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => controls.seekBy(-5)}
+                data-testid="button-seek-back"
+                className="text-white/40 hover:text-white/75 transition-colors p-1.5 rounded-lg hover:bg-white/6"
+                title="Rewind 5 seconds"
+              >
+                <span className="flex items-center gap-0.5">
+                  <SkipBack size={14} />
+                  <span className="text-[10px] font-medium">5</span>
+                </span>
+              </button>
+
+              <button
+                onClick={controls.prevTrack}
+                data-testid="button-prev"
+                className="text-white/50 hover:text-white/80 transition-colors p-1.5 rounded-lg hover:bg-white/6"
+              >
+                <SkipBack size={18} />
+              </button>
+
+              <button
+                onClick={controls.togglePlayPause}
+                data-testid="button-play-pause"
+                className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center transition-transform active:scale-95 hover:bg-white/90"
+              >
+                {isLoading ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : isPlaying ? (
+                  <Pause size={18} fill="black" />
+                ) : (
+                  <Play size={18} fill="black" className="ml-0.5" />
+                )}
+              </button>
+
+              <button
+                onClick={controls.nextTrack}
+                data-testid="button-next"
+                className="text-white/50 hover:text-white/80 transition-colors p-1.5 rounded-lg hover:bg-white/6"
+              >
+                <SkipForward size={18} />
+              </button>
+
+              <button
+                onClick={() => controls.seekBy(5)}
+                data-testid="button-seek-forward"
+                className="text-white/40 hover:text-white/75 transition-colors p-1.5 rounded-lg hover:bg-white/6"
+                title="Forward 5 seconds"
+              >
+                <span className="flex items-center gap-0.5">
+                  <span className="text-[10px] font-medium">5</span>
+                  <SkipForward size={14} />
+                </span>
+              </button>
+            </div>
+
+            {/* Sleep toggle */}
+            <button
+              onClick={() => { setShowSleep(true); setShowSpeed(false); }}
+              data-testid="button-sleep"
+              className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
+                isSleepActive
+                  ? "bg-white/12 text-white/80"
+                  : "bg-transparent text-white/30 hover:text-white/55"
+              }`}
+            >
+              <Timer size={16} />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
