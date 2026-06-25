@@ -116,7 +116,7 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
             onChange={(e) => { setLink(e.target.value); setStatus("idle"); setErrorMsg(""); }}
             onKeyDown={handleKeyDown}
             placeholder="https://drive.google.com/drive/folders/..."
-            className="flex-1 bg-transparent text-white/80 text-sm placeholder:text-white/20 outline-none font-[Outfit]"
+            className="flex-1 bg-transparent text-white/80 text-sm placeholder:text-white/20 outline-none"
             data-testid="input-folder-link"
             disabled={status === "loading"}
           />
