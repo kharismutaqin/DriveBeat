@@ -7,8 +7,6 @@ import {
   Loader2,
   Timer,
   CircleGauge,
-  ChevronUp,
-  X,
   Minus,
   Plus,
   FastForward,
@@ -123,7 +121,6 @@ export function MiniPlayer({
             <SpeedPanel
               playbackRate={playbackRate}
               onChange={controls.setPlaybackRate}
-              onClose={() => setShowSpeed(false)}
             />
           ) : showSleep ? (
             <SleepPanel
@@ -132,7 +129,6 @@ export function MiniPlayer({
               sleepTotalSeconds={sleepTotalSeconds}
               onAdjust={adjustTime}
               onCancel={cancelSleepTimer}
-              onClose={() => setShowSleep(false)}
             />
           ) : (
             <div className="w-full">
@@ -182,12 +178,15 @@ export function MiniPlayer({
           {/* Speed toggle */}
           <button
             onClick={() => {
-              setShowSpeed(true);
-              setShowSleep(false);
+              setShowSpeed((prev) => {
+                const next = !prev;
+                if (next) setShowSleep(false);
+                return next;
+              });
             }}
             data-testid="button-speed"
             className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
-              playbackRate !== 1
+              showSpeed || playbackRate !== 1
                 ? "bg-white/12 text-white/80"
                 : "bg-transparent text-white/30 hover:text-white/55"
             }`}
@@ -253,12 +252,15 @@ export function MiniPlayer({
           {/* Sleep toggle */}
           <button
             onClick={() => {
-              setShowSleep(true);
-              setShowSpeed(false);
+              setShowSleep((prev) => {
+                const next = !prev;
+                if (next) setShowSpeed(false);
+                return next;
+              });
             }}
             data-testid="button-sleep"
             className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
-              isSleepActive
+              showSleep || isSleepActive
                 ? "bg-white/12 text-white/80"
                 : "bg-transparent text-white/30 hover:text-white/55"
             }`}
@@ -275,11 +277,9 @@ export function MiniPlayer({
 function SpeedPanel({
   playbackRate,
   onChange,
-  onClose,
 }: {
   playbackRate: number;
   onChange: (rate: number) => void;
-  onClose: () => void;
 }) {
   return (
     <div className="w-full flex items-center gap-2 popup-slide-up">
@@ -316,13 +316,6 @@ function SpeedPanel({
       >
         Reset
       </button>
-
-      <button
-        onClick={onClose}
-        className="text-white/25 hover:text-white/60 transition-colors p-0.5 shrink-0"
-      >
-        <X size={14} />
-      </button>
     </div>
   );
 }
@@ -334,14 +327,12 @@ function SleepPanel({
   sleepTotalSeconds,
   onAdjust,
   onCancel,
-  onClose,
 }: {
   isSleepActive: boolean;
   sleepRemaining: number;
   sleepTotalSeconds: number;
   onAdjust: (delta: number) => void;
   onCancel: () => void;
-  onClose: () => void;
 }) {
   const mins = String(Math.floor((isSleepActive ? sleepRemaining : sleepTotalSeconds) / 60)).padStart(2, "0");
   const secs = String((isSleepActive ? sleepRemaining : sleepTotalSeconds) % 60).padStart(2, "0");
@@ -388,19 +379,12 @@ function SleepPanel({
         </button>
       </div>
 
-      {/* Reset / Stop + close */}
+      {/* Reset / Stop */}
       <button
         onClick={onCancel}
         className="h-9 px-3 rounded-lg text-xs font-medium transition-colors bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90 shrink-0"
       >
         Reset
-      </button>
-
-      <button
-        onClick={onClose}
-        className="text-white/25 hover:text-white/60 transition-colors p-0.5 shrink-0"
-      >
-        <X size={14} />
       </button>
     </div>
   );
