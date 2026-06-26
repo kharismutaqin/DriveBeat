@@ -348,54 +348,58 @@ function SleepPanel({
   const secs = String((isSleepActive ? sleepRemaining : sleepTotalSeconds) % 60).padStart(2, "0");
 
   return (
-    <div className="w-full flex items-center justify-center gap-2 popup-slide-up">
-      {/* Minutes — compact inline */}
-      <button
-        onClick={() => onAdjust(60)}
-        className="w-8 h-9 flex items-center justify-center text-white/35 hover:text-white/70 transition-colors"
-      >
-        <ChevronUp size={12} />
-      </button>
-      <div className="w-10 h-9 bg-white/10 rounded-lg flex items-center justify-center">
-        <span className="text-white/80 text-sm font-medium tabular-nums">{mins}</span>
+    <div className="w-full flex items-center justify-center gap-3 popup-slide-up">
+      {/* Minutes — inline [-] [05] [+] */}
+      <div className="flex items-center bg-white/8 rounded-lg h-9">
+        <button
+          onClick={() => onAdjust(-60)}
+          className="w-8 h-9 flex items-center justify-center text-white/40 hover:text-white/75 transition-colors"
+        >
+          <Minus size={12} />
+        </button>
+        <div className="w-9 h-9 flex items-center justify-center bg-white/5 rounded-lg">
+          <span className="text-white/85 text-sm font-medium tabular-nums">{mins}</span>
+        </div>
+        <button
+          onClick={() => onAdjust(60)}
+          className="w-8 h-9 flex items-center justify-center text-white/40 hover:text-white/75 transition-colors"
+        >
+          <Plus size={12} />
+        </button>
       </div>
-      <button
-        onClick={() => onAdjust(-60)}
-        className="w-8 h-9 flex items-center justify-center text-white/35 hover:text-white/70 transition-colors"
-      >
-        <ChevronUp size={12} className="rotate-180" />
-      </button>
 
-      <span className="text-white/25 text-sm font-medium pb-0.5">:</span>
+      <span className="text-white/25 text-sm font-medium">:</span>
 
-      {/* Seconds */}
-      <button
-        onClick={() => onAdjust(10)}
-        className="w-8 h-9 flex items-center justify-center text-white/35 hover:text-white/70 transition-colors"
-      >
-        <ChevronUp size={12} />
-      </button>
-      <div className="w-10 h-9 bg-white/10 rounded-lg flex items-center justify-center">
-        <span className="text-white/80 text-sm font-medium tabular-nums">{secs}</span>
+      {/* Seconds — inline [-] [00] [+] */}
+      <div className="flex items-center bg-white/8 rounded-lg h-9">
+        <button
+          onClick={() => onAdjust(-10)}
+          className="w-8 h-9 flex items-center justify-center text-white/40 hover:text-white/75 transition-colors"
+        >
+          <Minus size={12} />
+        </button>
+        <div className="w-9 h-9 flex items-center justify-center bg-white/5 rounded-lg">
+          <span className="text-white/85 text-sm font-medium tabular-nums">{secs}</span>
+        </div>
+        <button
+          onClick={() => onAdjust(10)}
+          className="w-8 h-9 flex items-center justify-center text-white/40 hover:text-white/75 transition-colors"
+        >
+          <Plus size={12} />
+        </button>
       </div>
-      <button
-        onClick={() => onAdjust(-10)}
-        className="w-8 h-9 flex items-center justify-center text-white/35 hover:text-white/70 transition-colors"
-      >
-        <ChevronUp size={12} className="rotate-180" />
-      </button>
 
       {/* Actions */}
       <button
         onClick={onStart}
         disabled={sleepTotalSeconds <= 0 && !isSleepActive}
-        className="h-9 px-2.5 rounded-lg text-xs font-medium transition-colors bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90 disabled:opacity-30 shrink-0"
+        className="h-9 px-3 rounded-lg text-xs font-medium transition-colors bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90 disabled:opacity-30 shrink-0"
       >
         On
       </button>
       <button
         onClick={onCancel}
-        className="h-9 px-2.5 rounded-lg text-xs font-medium transition-colors bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90 shrink-0"
+        className="h-9 px-3 rounded-lg text-xs font-medium transition-colors bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90 shrink-0"
       >
         Reset
       </button>
