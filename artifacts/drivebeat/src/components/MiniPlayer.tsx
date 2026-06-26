@@ -49,7 +49,6 @@ export function MiniPlayer({
     if (sleepTimerRef.current) clearTimeout(sleepTimerRef.current);
     if (sleepIntervalRef.current) clearInterval(sleepIntervalRef.current);
     setSleepTotalSeconds(totalSeconds);
-    setShowSleep(false);
 
     if (totalSeconds <= 0) {
       setSleepRemaining(0);
@@ -80,13 +79,16 @@ export function MiniPlayer({
     if (sleepIntervalRef.current) clearInterval(sleepIntervalRef.current);
     setSleepTotalSeconds(0);
     setSleepRemaining(0);
-    setShowSleep(false);
   };
 
   const adjustTime = (deltaSeconds: number) => {
-    setSleepTotalSeconds((prev) =>
-      Math.max(0, Math.min(3599, prev + deltaSeconds)),
-    );
+    const next = Math.max(0, Math.min(3599, sleepTotalSeconds + deltaSeconds));
+    setSleepTotalSeconds(next);
+    if (next > 0) {
+      startSleepTimer(next);
+    } else {
+      cancelSleepTimer();
+    }
   };
 
   useEffect(() => {
@@ -129,7 +131,6 @@ export function MiniPlayer({
               sleepRemaining={sleepRemaining}
               sleepTotalSeconds={sleepTotalSeconds}
               onAdjust={adjustTime}
-              onStart={() => startSleepTimer(isSleepActive ? sleepRemaining : sleepTotalSeconds)}
               onCancel={cancelSleepTimer}
               onClose={() => setShowSleep(false)}
             />
@@ -332,7 +333,6 @@ function SleepPanel({
   sleepRemaining,
   sleepTotalSeconds,
   onAdjust,
-  onStart,
   onCancel,
   onClose,
 }: {
@@ -340,7 +340,6 @@ function SleepPanel({
   sleepRemaining: number;
   sleepTotalSeconds: number;
   onAdjust: (delta: number) => void;
-  onStart: () => void;
   onCancel: () => void;
   onClose: () => void;
 }) {
@@ -389,14 +388,7 @@ function SleepPanel({
         </button>
       </div>
 
-      {/* Actions */}
-      <button
-        onClick={onStart}
-        disabled={sleepTotalSeconds <= 0 && !isSleepActive}
-        className="h-9 px-3 rounded-lg text-xs font-medium transition-colors bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90 disabled:opacity-30 shrink-0"
-      >
-        On
-      </button>
+      {/* Reset / Stop + close */}
       <button
         onClick={onCancel}
         className="h-9 px-3 rounded-lg text-xs font-medium transition-colors bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90 shrink-0"
