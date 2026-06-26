@@ -1,6 +1,6 @@
 const API_KEY = process.env.VITE_GOOGLE_DRIVE_API_KEY;
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req, res) {
   if (!API_KEY) {
     return res.status(503).json({ error: "API Key not configured" });
   }
@@ -23,23 +23,11 @@ export default async function handler(req: any, res: any) {
         "User-Agent": "Mozilla/5.0 (compatible; DriveBeat/1.0)",
       },
     });
-
+    const data = await apiRes.text();
     res.status(apiRes.status);
-
-    const contentType = apiRes.headers.get("Content-Type") || "application/octet-stream";
-    res.setHeader("Content-Type", contentType);
-
-    const contentLength = apiRes.headers.get("Content-Length");
-    if (contentLength) res.setHeader("Content-Length", contentLength);
-
-    if (contentType.includes("audio/") || contentType.includes("video/")) {
-      res.setHeader("Accept-Ranges", "bytes");
-    }
-
-    const data = await apiRes.arrayBuffer();
-    res.send(Buffer.from(data));
+    res.setHeader("Content-Type", apiRes.headers.get("Content-Type") || "application/json");
+    res.send(data);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: "Proxy error", message });
+    res.status(500).json({ error: "Proxy error", message: err.message });
   }
 }
