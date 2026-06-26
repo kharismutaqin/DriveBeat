@@ -26,7 +26,7 @@ export function TrackList({
   onRenameTrack,
   onReorderTracks,
 }: TrackListProps) {
-  // ── Rename state ─────────────────────────────────────────────
+  // ── Rename state ────────────────────────────────────────────────
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -35,7 +35,6 @@ export function TrackList({
     if (editingId) inputRef.current?.focus();
   }, [editingId]);
 
-  // Exit rename mode when manage mode turns off
   useEffect(() => {
     if (!isManageMode) setEditingId(null);
   }, [isManageMode]);
@@ -44,80 +43,71 @@ export function TrackList({
     setEditValue(trackRenames[track.id] ?? cleanTrackName(track.name));
     setEditingId(track.id);
   };
-
-  const commitEdit = (trackId: string) => {
-    onRenameTrack(trackId, editValue);
-    setEditingId(null);
-  };
-
+  const commitEdit = (trackId: string) => { onRenameTrack(trackId, editValue); setEditingId(null); };
   const cancelEdit = () => setEditingId(null);
-
   const handleKeyDown = (e: React.KeyboardEvent, trackId: string) => {
     if (e.key === "Enter") commitEdit(trackId);
     if (e.key === "Escape") cancelEdit();
   };
 
-  // ── Drag-to-reorder state ────────────────────────────────────
-  // dragVisual: used for real-time visual reordering during touch drag
-  const [dragVisual, setDragVisual] = useState<{ from: number; current: number } | null>(null);
-  const draggingRef = useRef<{ from: number; current: number } | null>(null);
-  const touchStartYRef = useRef(0);
+  // ── Drag-to-reorder (Pointer Events + setPointerCapture) ────────
+  // Using pointer events is the correct approach for mobile drag-and-drop:
+  // setPointerCapture routes all subsequent pointer events to the grip element,
+  // bypassing the scroll container entirely.
+  const [dragState, setDragState] = useState<{ from: number; current: number } | null>(null);
+  const dragRef = useRef<{ from: number; current: number } | null>(null);
+  const startYRef = useRef(0);
   const rowHeightRef = useRef(56);
-  const listRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
 
-  // Attach non-passive touchmove so we can preventDefault (block page scroll)
-  useEffect(() => {
-    const el = listRef.current;
-    if (!el || !isManageMode) return;
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (!draggingRef.current) return;
-      e.preventDefault();
-      const dy = e.touches[0].clientY - touchStartYRef.current;
-      const rawIndex = draggingRef.current.from + Math.round(dy / rowHeightRef.current);
-      const clamped = Math.max(0, Math.min(tracks.length - 1, rawIndex));
-      if (clamped !== draggingRef.current.current) {
-        draggingRef.current = { ...draggingRef.current, current: clamped };
-        setDragVisual({ ...draggingRef.current });
-      }
-    };
-
-    el.addEventListener("touchmove", onTouchMove, { passive: false });
-    return () => el.removeEventListener("touchmove", onTouchMove);
-  }, [isManageMode, tracks.length]);
-
-  const handleGripTouchStart = (e: React.TouchEvent, index: number) => {
-    touchStartYRef.current = e.touches[0].clientY;
-    // measure row height from list children
-    const children = listRef.current?.children;
-    if (children?.[index]) {
-      rowHeightRef.current = (children[index] as HTMLElement).offsetHeight || 56;
+  const handleGripPointerDown = (e: React.PointerEvent<HTMLDivElement>, index: number) => {
+    e.preventDefault();
+    // Capture pointer so all move/up events route here even outside this element
+    e.currentTarget.setPointerCapture(e.pointerId);
+    startYRef.current = e.clientY;
+    // Measure actual row height
+    const items = listRef.current?.children;
+    if (items?.[index]) {
+      rowHeightRef.current = (items[index] as HTMLElement).offsetHeight || 56;
     }
-    draggingRef.current = { from: index, current: index };
-    setDragVisual({ from: index, current: index });
+    dragRef.current = { from: index, current: index };
+    setDragState({ from: index, current: index });
   };
 
-  const handleTouchEnd = () => {
-    const drag = draggingRef.current;
+  const handleGripPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current) return;
+    e.preventDefault();
+    const dy = e.clientY - startYRef.current;
+    const rawIndex = dragRef.current.from + Math.round(dy / rowHeightRef.current);
+    const clamped = Math.max(0, Math.min(tracks.length - 1, rawIndex));
+    if (clamped !== dragRef.current.current) {
+      dragRef.current = { ...dragRef.current, current: clamped };
+      setDragState({ ...dragRef.current });
+    }
+  };
+
+  const handleGripPointerUp = () => {
+    const drag = dragRef.current;
     if (drag && drag.from !== drag.current) {
       onReorderTracks(drag.from, drag.current);
     }
-    draggingRef.current = null;
-    setDragVisual(null);
+    dragRef.current = null;
+    setDragState(null);
   };
 
-  // Compute display order during drag
+  // Reorder display list during drag for real-time visual feedback
   const displayedTracks = useMemo(() => {
-    if (!dragVisual || dragVisual.from === dragVisual.current) return tracks;
+    if (!dragState || dragState.from === dragState.current) return tracks;
     const arr = [...tracks];
-    const [item] = arr.splice(dragVisual.from, 1);
-    arr.splice(dragVisual.current, 0, item);
+    const [item] = arr.splice(dragState.from, 1);
+    arr.splice(dragState.current, 0, item);
     return arr;
-  }, [tracks, dragVisual]);
+  }, [tracks, dragState]);
 
-  const draggingTrackId = dragVisual ? tracks[dragVisual.from]?.id : null;
+  const draggingTrackId = dragState ? tracks[dragState.from]?.id : null;
+  const isDragging = dragState !== null;
 
-  // ── Render guards ────────────────────────────────────────────
+  // ── Render guards ───────────────────────────────────────────────
   if (isLoadingTracks) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3 text-white/25">
@@ -138,14 +128,11 @@ export function TrackList({
 
   return (
     <div
-      ref={listRef}
-      className="flex-1 overflow-y-auto scrollbar-none"
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchEnd}
+      className="flex-1 scrollbar-none"
+      style={{ overflowY: isDragging ? "hidden" : "auto" }}
     >
-      <ul className="divide-y divide-white/[0.04]">
+      <ul ref={listRef} className="divide-y divide-white/[0.04]">
         {displayedTracks.map((track, displayIndex) => {
-          // original index in `tracks` (needed for onSelectTrack)
           const originalIndex = tracks.findIndex((t) => t.id === track.id);
           const isActive = track.id === currentTrackId;
           const displayName = trackRenames[track.id] ?? cleanTrackName(track.name);
@@ -153,10 +140,7 @@ export function TrackList({
           const isDraggingThis = track.id === draggingTrackId;
 
           return (
-            <li
-              key={track.id}
-              className={`transition-opacity ${isDraggingThis ? "opacity-40" : "opacity-100"}`}
-            >
+            <li key={track.id}>
               {isManageMode && isEditing ? (
                 /* ── Rename row ── */
                 <div className="flex items-center gap-2 px-4 py-2.5">
@@ -187,12 +171,22 @@ export function TrackList({
                 </div>
               ) : (
                 /* ── Normal / manage row ── */
-                <div className={`flex items-center ${isDraggingThis ? "bg-white/6 rounded-lg" : ""}`}>
-                  {/* Drag handle — only in manage mode */}
+                <div
+                  className={`flex items-center transition-all duration-100 ${
+                    isDraggingThis
+                      ? "opacity-40 bg-white/5"
+                      : "opacity-100"
+                  }`}
+                >
+                  {/* Grip handle — only in manage mode */}
                   {isManageMode && (
                     <div
-                      className="pl-3 pr-1 py-4 text-white/20 active:text-white/50 touch-none cursor-grab active:cursor-grabbing shrink-0"
-                      onTouchStart={(e) => handleGripTouchStart(e, displayIndex)}
+                      className="pl-3 pr-2 py-4 text-white/20 shrink-0 select-none"
+                      style={{ touchAction: "none", cursor: isDragging ? "grabbing" : "grab" }}
+                      onPointerDown={(e) => handleGripPointerDown(e, displayIndex)}
+                      onPointerMove={handleGripPointerMove}
+                      onPointerUp={handleGripPointerUp}
+                      onPointerCancel={handleGripPointerUp}
                       data-testid={`grip-${track.id}`}
                     >
                       <GripVertical size={16} />
@@ -201,14 +195,16 @@ export function TrackList({
 
                   {/* Track button */}
                   <button
-                    onClick={() => !isManageMode && onSelectTrack(track, originalIndex)}
+                    onClick={() => {
+                      if (!isManageMode && !isDragging) onSelectTrack(track, originalIndex);
+                    }}
                     data-testid={`track-item-${track.id}`}
-                    className={`flex-1 flex items-center gap-3 py-3.5 text-left transition-colors min-w-0
-                      ${isManageMode ? "pl-1 pr-2 active:bg-transparent cursor-default" : "px-4 active:bg-white/5"}
+                    className={`flex-1 flex items-center gap-3 py-3.5 text-left min-w-0
+                      ${isManageMode ? "pl-1 pr-2 cursor-default" : "px-4 transition-colors active:bg-white/5"}
                       ${isActive && !isManageMode ? "bg-white/[0.06]" : !isManageMode ? "hover:bg-white/[0.03]" : ""}
                     `}
                   >
-                    {/* Number / playing indicator */}
+                    {/* Number / playing indicator (normal mode only) */}
                     {!isManageMode && (
                       <div className="shrink-0 w-8 flex items-center justify-center">
                         {isActive && isPlaying ? (
@@ -231,13 +227,12 @@ export function TrackList({
                     </div>
                   </button>
 
-                  {/* Rename pencil — visible only in manage mode */}
+                  {/* Pencil — always visible in manage mode */}
                   {isManageMode && (
                     <button
                       onClick={() => startEdit(track)}
-                      className="p-2.5 text-white/25 hover:text-white/65 active:text-white/65 transition-colors shrink-0"
+                      className="p-3 text-white/20 active:text-white/65 transition-colors shrink-0"
                       data-testid={`button-rename-track-${track.id}`}
-                      title="Rename"
                     >
                       <Pencil size={13} />
                     </button>
