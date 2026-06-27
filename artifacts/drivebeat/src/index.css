@@ -223,6 +223,14 @@
     animation: marquee-scroll linear infinite;
     width: fit-content;
   }
+
+  .ellipsize-start {
+    direction: rtl;
+    text-align: left;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
 }
 
 @keyframes popup-slide-up {

@@ -4,17 +4,14 @@ import { useRef, useEffect, useState } from "react";
 // ADJUST THIS VALUE to control marquee scroll speed
 // This is pixels scrolled per second. Larger = faster scroll.
 // ============================================================
-const SCROLL_SPEED_PX_PER_SEC = 30;
+const SCROLL_SPEED_PX_PER_SEC = 10;
 
 interface MarqueeTextProps {
   text: string;
   className?: string;
 }
 
-export function MarqueeText({
-  text,
-  className = "",
-}: MarqueeTextProps) {
+export function MarqueeText({ text, className = "" }: MarqueeTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
   const [shouldScroll, setShouldScroll] = useState(false);
@@ -42,9 +39,8 @@ export function MarqueeText({
   // Fixed pixel speed: all marquees move at the same px/sec regardless
   // of text length or container width. Duration auto-adjusts.
   const gap = 32; // pr-8 = 32px gap between duplicated text
-  const duration = textWidth > 0
-    ? (textWidth + gap) / SCROLL_SPEED_PX_PER_SEC
-    : 12;
+  const duration =
+    textWidth > 0 ? (textWidth + gap) / SCROLL_SPEED_PX_PER_SEC : 12;
 
   return (
     <div ref={containerRef} className={`overflow-hidden ${className}`}>
