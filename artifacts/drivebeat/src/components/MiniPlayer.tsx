@@ -13,6 +13,7 @@ import {
   Plus,
   FastForward,
   Rewind,
+  Shuffle,
 } from "lucide-react";
 import { formatDuration, cleanTrackName } from "../lib/drive";
 import type { PlayerState, PlayerControls } from "../hooks/useAudioPlayer";
@@ -21,6 +22,7 @@ interface MiniPlayerProps {
   state: PlayerState;
   controls: PlayerControls;
   trackRenames?: Record<string, string>;
+  hasTracks?: boolean;
 }
 
 const SPEED_STEP = 0.25;
@@ -36,6 +38,7 @@ export function MiniPlayer({
   state,
   controls,
   trackRenames = {},
+  hasTracks = false,
 }: MiniPlayerProps) {
   const {
     currentTrack,
@@ -105,11 +108,12 @@ export function MiniPlayer({
     };
   }, []);
 
-  if (!currentTrack) return null;
+  if (!currentTrack && !hasTracks) return null;
 
   const progress = duration > 0 ? currentTime / duration : 0;
-  const displayName =
-    trackRenames[currentTrack.id] ?? cleanTrackName(currentTrack.name);
+  const displayName = currentTrack
+    ? (trackRenames[currentTrack.id] ?? cleanTrackName(currentTrack.name))
+    : "";
   const isSleepActive = sleepRemaining > 0;
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -119,7 +123,13 @@ export function MiniPlayer({
   };
 
   // Determine which panel key to render inside AnimatePresence
-  const activePanel = showSpeed ? "speed" : showSleep ? "sleep" : "track";
+  const activePanel = showSpeed
+    ? "speed"
+    : showSleep
+    ? "sleep"
+    : currentTrack
+    ? "track"
+    : "shuffle";
 
   return (
     <div
@@ -164,6 +174,26 @@ export function MiniPlayer({
                   onAdjust={adjustTime}
                   onCancel={cancelSleepTimer}
                 />
+              </motion.div>
+            )}
+
+            {activePanel === "shuffle" && (
+              <motion.div
+                key="shuffle"
+                className="w-full"
+                variants={panelVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={panelTransition}
+              >
+                <button
+                  onClick={controls.shufflePlay}
+                  className="w-full h-[52px] flex items-center justify-center gap-2 rounded-xl bg-white/6 text-white/60 text-sm font-medium active:bg-white/10 transition-colors"
+                >
+                  <Shuffle size={15} />
+                  Shuffle Play
+                </button>
               </motion.div>
             )}
 

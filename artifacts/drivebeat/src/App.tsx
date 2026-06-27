@@ -553,6 +553,7 @@ export default function App() {
         state={playerState}
         controls={playerControls}
         trackRenames={trackRenames}
+        hasTracks={state.tracks.length > 0}
       />
     </div>
   );

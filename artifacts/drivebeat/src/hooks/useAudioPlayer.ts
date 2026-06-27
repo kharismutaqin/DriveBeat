@@ -15,6 +15,7 @@ export interface PlayerState {
 
 export interface PlayerControls {
   play: (track: DriveFile, index: number) => void;
+  shufflePlay: () => void;
   togglePlayPause: () => void;
   seekTo: (time: number) => void;
   seekBy: (delta: number) => void;
@@ -269,8 +270,18 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     }));
   }, []);
 
+  const shufflePlay = useCallback(() => {
+    const allTracks = tracksRef.current;
+    if (allTracks.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * allTracks.length);
+    const track = allTracks[randomIndex];
+    if (!track) return;
+    play(track, randomIndex);
+  }, [play]);
+
   const controls: PlayerControls = {
     play,
+    shufflePlay,
     togglePlayPause,
     seekTo,
     seekBy,
