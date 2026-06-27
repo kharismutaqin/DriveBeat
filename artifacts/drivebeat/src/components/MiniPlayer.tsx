@@ -13,7 +13,6 @@ import {
   Plus,
   FastForward,
   Rewind,
-  Shuffle,
 } from "lucide-react";
 import { formatDuration, cleanTrackName } from "../lib/drive";
 import type { PlayerState, PlayerControls } from "../hooks/useAudioPlayer";
@@ -239,81 +238,57 @@ export function MiniPlayer({
 
           {/* Playback controls */}
           <div className="flex items-center gap-3">
-            {currentTrack ? (
-              <>
-                {/* Playing: full 5-button layout */}
-                <button
-                  onClick={() => controls.seekBy(-5)}
-                  data-testid="button-seek-back"
-                  className="text-white/40 transition-colors p-1.5 rounded-lg"
-                  title="Rewind 5 seconds"
-                >
-                  <span className="flex items-center gap-0.5">
-                    <Rewind size={18} />
-                  </span>
-                </button>
+            <button
+              onClick={() => controls.seekBy(-5)}
+              data-testid="button-seek-back"
+              className="text-white/40 transition-colors p-1.5 rounded-lg"
+              title="Rewind 5 seconds"
+            >
+              <span className="flex items-center gap-0.5">
+                <Rewind size={18} />
+              </span>
+            </button>
 
-                <button
-                  onClick={controls.prevTrack}
-                  data-testid="button-prev"
-                  className="text-white/50 transition-colors p-1.5 rounded-lg"
-                >
-                  <SkipBack size={18} />
-                </button>
+            <button
+              onClick={controls.prevTrack}
+              data-testid="button-prev"
+              className="text-white/50 transition-colors p-1.5 rounded-lg"
+            >
+              <SkipBack size={18} />
+            </button>
 
-                <button
-                  onClick={controls.togglePlayPause}
-                  data-testid="button-play-pause"
-                  className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center transition-transform active:scale-95"
-                >
-                  {isLoading ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : isPlaying ? (
-                    <Pause size={18} fill="black" />
-                  ) : (
-                    <Play size={18} fill="black" className="ml-0.5" />
-                  )}
-                </button>
+            <button
+              onClick={controls.togglePlayPause}
+              data-testid="button-play-pause"
+              className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center transition-transform active:scale-95"
+            >
+              {isLoading ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : isPlaying ? (
+                <Pause size={18} fill="black" />
+              ) : (
+                <Play size={18} fill="black" className="ml-0.5" />
+              )}
+            </button>
 
-                <button
-                  onClick={controls.nextTrack}
-                  data-testid="button-next"
-                  className="text-white/50 transition-colors p-1.5 rounded-lg"
-                >
-                  <SkipForward size={18} />
-                </button>
+            <button
+              onClick={controls.nextTrack}
+              data-testid="button-next"
+              className="text-white/50 transition-colors p-1.5 rounded-lg"
+            >
+              <SkipForward size={18} />
+            </button>
 
-                <button
-                  onClick={() => controls.seekBy(5)}
-                  data-testid="button-seek-forward"
-                  className="text-white/40 transition-colors p-1.5 rounded-lg"
-                  title="Forward 5 seconds"
-                >
-                  <span className="flex items-center gap-0.5">
-                    <FastForward size={18} />
-                  </span>
-                </button>
-              </>
-            ) : (
-              <>
-                {/* Stopped: Play + Shuffle layout */}
-                <button
-                  disabled
-                  className="w-11 h-11 rounded-full bg-white/10 text-white/30 flex items-center justify-center cursor-default"
-                >
-                  <Play size={18} fill="white" className="ml-0.5" />
-                </button>
-
-                <button
-                  onClick={controls.shuffle}
-                  data-testid="button-shuffle"
-                  className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center transition-transform active:scale-95"
-                  title="Shuffle play"
-                >
-                  <Shuffle size={18} />
-                </button>
-              </>
-            )}
+            <button
+              onClick={() => controls.seekBy(5)}
+              data-testid="button-seek-forward"
+              className="text-white/40 transition-colors p-1.5 rounded-lg"
+              title="Forward 5 seconds"
+            >
+              <span className="flex items-center gap-0.5">
+                <FastForward size={18} />
+              </span>
+            </button>
           </div>
 
           {/* Sleep toggle */}
