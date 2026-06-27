@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   SkipBack,
   SkipForward,
@@ -22,6 +23,13 @@ interface MiniPlayerProps {
 }
 
 const SPEED_STEP = 0.25;
+
+const panelVariants = {
+  initial: { y: 10, opacity: 0, scale: 0.98 },
+  animate: { y: 0, opacity: 1, scale: 1 },
+  exit: { y: 10, opacity: 0, scale: 0.98 },
+};
+const panelTransition = { duration: 0.2, ease: [0.22, 1, 0.36, 1] as const };
 
 export function MiniPlayer({
   state,
@@ -109,71 +117,108 @@ export function MiniPlayer({
     controls.seekTo(ratio * duration);
   };
 
+  // Determine which panel key to render inside AnimatePresence
+  const activePanel = showSpeed ? "speed" : showSleep ? "sleep" : "track";
+
   return (
     <div
       className="fixed bottom-0 left-0 right-0 z-40 bg-[#0d0d0d] border-t border-white/[0.07] safe-area-bottom"
       data-testid="mini-player"
     >
       <div className="px-4 pt-3 pb-4">
-        {/* ── Top section: track name / progress / speed / sleep ─────── */}
-        <div className="mb-3 min-h-[52px] flex items-center">
-          {showSpeed ? (
-            <SpeedPanel
-              playbackRate={playbackRate}
-              onChange={controls.setPlaybackRate}
-            />
-          ) : showSleep ? (
-            <SleepPanel
-              isSleepActive={isSleepActive}
-              sleepRemaining={sleepRemaining}
-              sleepTotalSeconds={sleepTotalSeconds}
-              onAdjust={adjustTime}
-              onCancel={cancelSleepTimer}
-            />
-          ) : (
-            <div className="w-full">
-              {/* Track name */}
-              <p
-                className="text-white/80 text-sm font-medium text-center leading-snug mb-3"
-                data-testid="text-track-name"
+        {/* ── Top section: animated panel swap ─────────────────────── */}
+        <div className="mb-3 min-h-[52px] flex items-center overflow-hidden">
+          <AnimatePresence mode="wait" initial={false}>
+            {activePanel === "speed" && (
+              <motion.div
+                key="speed"
+                className="w-full"
+                variants={panelVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={panelTransition}
               >
-                {displayName}
-              </p>
+                <SpeedPanel
+                  playbackRate={playbackRate}
+                  onChange={controls.setPlaybackRate}
+                />
+              </motion.div>
+            )}
 
-              {/* Progress bar */}
-              <div className="flex items-center gap-3">
-                <span
-                  className="text-[11px] text-white/30 tabular-nums shrink-0 w-10 text-right"
-                  data-testid="text-current-time"
+            {activePanel === "sleep" && (
+              <motion.div
+                key="sleep"
+                className="w-full"
+                variants={panelVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={panelTransition}
+              >
+                <SleepPanel
+                  isSleepActive={isSleepActive}
+                  sleepRemaining={sleepRemaining}
+                  sleepTotalSeconds={sleepTotalSeconds}
+                  onAdjust={adjustTime}
+                  onCancel={cancelSleepTimer}
+                />
+              </motion.div>
+            )}
+
+            {activePanel === "track" && (
+              <motion.div
+                key="track"
+                className="w-full"
+                variants={panelVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={panelTransition}
+              >
+                {/* Track name */}
+                <p
+                  className="text-white/80 text-sm font-medium text-center leading-snug mb-3"
+                  data-testid="text-track-name"
                 >
-                  {formatDuration(currentTime)}
-                </span>
-                <div
-                  className="flex-1 h-[5px] bg-white/8 cursor-pointer relative group rounded-full"
-                  onClick={handleSeek}
-                  data-testid="progress-bar"
-                >
+                  {displayName}
+                </p>
+
+                {/* Progress bar */}
+                <div className="flex items-center gap-3">
+                  <span
+                    className="text-[11px] text-white/30 tabular-nums shrink-0 w-10 text-right"
+                    data-testid="text-current-time"
+                  >
+                    {formatDuration(currentTime)}
+                  </span>
                   <div
-                    className="h-full bg-white/70 rounded-full transition-none"
-                    style={{ width: `${progress * 100}%` }}
-                  />
-                  <div
-                    className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1/2"
-                    style={{ left: `${progress * 100}%` }}
-                  />
+                    className="flex-1 h-[5px] bg-white/8 cursor-pointer relative group rounded-full"
+                    onClick={handleSeek}
+                    data-testid="progress-bar"
+                  >
+                    <div
+                      className="h-full bg-white/70 rounded-full transition-none"
+                      style={{ width: `${progress * 100}%` }}
+                    />
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1/2"
+                      style={{ left: `${progress * 100}%` }}
+                    />
+                  </div>
+                  <span
+                    className="text-[11px] text-white/30 tabular-nums shrink-0 w-10"
+                    data-testid="text-duration"
+                  >
+                    {formatDuration(duration)}
+                  </span>
                 </div>
-                <span
-                  className="text-[11px] text-white/30 tabular-nums shrink-0 w-10"
-                  data-testid="text-duration"
-                >
-                  {formatDuration(duration)}
-                </span>
-              </div>
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* ── Controls row — always visible ──────────────────── */}
+        {/* ── Controls row — always visible ──────────────────────────── */}
         <div className="flex items-center justify-between">
           {/* Speed toggle */}
           <button
@@ -273,7 +318,7 @@ export function MiniPlayer({
   );
 }
 
-/* ── Speed panel (compact inline, replaces track name+progress) ── */
+/* ── Speed panel ─────────────────────────────────────────────────── */
 function SpeedPanel({
   playbackRate,
   onChange,
@@ -282,7 +327,7 @@ function SpeedPanel({
   onChange: (rate: number) => void;
 }) {
   return (
-    <div className="w-full flex items-center gap-2 popup-slide-up">
+    <div className="w-full flex items-center gap-2">
       <button
         onClick={() =>
           onChange(Math.max(0.25, Number((playbackRate - SPEED_STEP).toFixed(2))))
@@ -320,7 +365,7 @@ function SpeedPanel({
   );
 }
 
-/* ── Sleep panel (compact inline, replaces track name+progress) ── */
+/* ── Sleep panel ─────────────────────────────────────────────────── */
 function SleepPanel({
   isSleepActive,
   sleepRemaining,
@@ -334,12 +379,13 @@ function SleepPanel({
   onAdjust: (delta: number) => void;
   onCancel: () => void;
 }) {
-  const mins = String(Math.floor((isSleepActive ? sleepRemaining : sleepTotalSeconds) / 60)).padStart(2, "0");
-  const secs = String((isSleepActive ? sleepRemaining : sleepTotalSeconds) % 60).padStart(2, "0");
+  const displaySeconds = isSleepActive ? sleepRemaining : sleepTotalSeconds;
+  const mins = String(Math.floor(displaySeconds / 60)).padStart(2, "0");
+  const secs = String(displaySeconds % 60).padStart(2, "0");
 
   return (
-    <div className="w-full flex items-center justify-center gap-3 popup-slide-up">
-      {/* Minutes — inline [-] [05] [+] */}
+    <div className="w-full flex items-center justify-center gap-3">
+      {/* Minutes */}
       <div className="flex items-center bg-white/8 rounded-lg h-9">
         <button
           onClick={() => onAdjust(-60)}
@@ -360,7 +406,7 @@ function SleepPanel({
 
       <span className="text-white/25 text-sm font-medium">:</span>
 
-      {/* Seconds — inline [-] [00] [+] */}
+      {/* Seconds */}
       <div className="flex items-center bg-white/8 rounded-lg h-9">
         <button
           onClick={() => onAdjust(-10)}
@@ -379,7 +425,6 @@ function SleepPanel({
         </button>
       </div>
 
-      {/* Reset / Stop */}
       <button
         onClick={onCancel}
         className="h-9 px-3 rounded-lg text-xs font-medium transition-colors bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90 shrink-0"

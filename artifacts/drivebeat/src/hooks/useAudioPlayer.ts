@@ -26,22 +26,35 @@ export interface PlayerControls {
 
 export function useAudioPlayer(tracks: DriveFile[]) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Refs always hold the latest values — safe to use inside event handlers
+  // that are set up once in useEffect([], []).
+  const tracksRef = useRef(tracks);
+  const currentIndexRef = useRef(-1);
+  const playbackRateRef = useRef(Number(localStorage.getItem("db_playbackRate")) || 1);
+
+  // Keep refs in sync on every render (synchronous, before any handler fires)
+  tracksRef.current = tracks;
+
   const [state, setState] = useState<PlayerState>({
     currentTrack: null,
     currentIndex: -1,
     isPlaying: false,
     currentTime: 0,
     duration: 0,
-    playbackRate: Number(localStorage.getItem("db_playbackRate")) || 1,
+    playbackRate: playbackRateRef.current,
     isLoading: false,
     error: null,
   });
 
+  // Keep currentIndexRef in sync with state
+  currentIndexRef.current = state.currentIndex;
+
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "metadata";
-    audio.playbackRate = state.playbackRate;
-    audio.preservesPitch = state.playbackRate === 1;
+    audio.playbackRate = playbackRateRef.current;
+    audio.preservesPitch = playbackRateRef.current === 1;
     audioRef.current = audio;
 
     const onTimeUpdate = () => {
@@ -52,12 +65,38 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     };
     const onPlay = () => setState((s) => ({ ...s, isPlaying: true }));
     const onPause = () => setState((s) => ({ ...s, isPlaying: false }));
+
     const onEnded = () => {
-      setState((s) => {
-        const nextIndex = s.currentIndex + 1;
-        return { ...s, isPlaying: false, currentIndex: nextIndex < tracks.length ? nextIndex : s.currentIndex };
-      });
+      const allTracks = tracksRef.current;
+      const currentIdx = currentIndexRef.current;
+      if (allTracks.length === 0) {
+        setState((s) => ({ ...s, isPlaying: false }));
+        return;
+      }
+      // Loop back to start when last track ends
+      const nextIndex = (currentIdx + 1) % allTracks.length;
+      const nextTrack = allTracks[nextIndex];
+      if (!nextTrack) {
+        setState((s) => ({ ...s, isPlaying: false }));
+        return;
+      }
+      const rate = playbackRateRef.current;
+      const url = getStreamUrl(nextTrack.id);
+      audio.src = url;
+      audio.playbackRate = rate;
+      audio.preservesPitch = rate === 1;
+      audio.play().catch(() => {});
+      setState((s) => ({
+        ...s,
+        currentTrack: nextTrack,
+        currentIndex: nextIndex,
+        currentTime: 0,
+        duration: 0,
+        isLoading: true,
+        error: null,
+      }));
     };
+
     const onWaiting = () => setState((s) => ({ ...s, isLoading: true }));
     const onCanPlay = () => {
       setState((s) => {
@@ -68,13 +107,15 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     };
     const onError = () => {
       const errorCode = audio.error?.code;
-      // Code 4 = MEDIA_ERR_SRC_NOT_SUPPORTED, which fires when src is empty or invalid
       if (!audio.src || audio.src === "" || errorCode === 4) {
-        // Intentional stop or empty source - don't show error
         setState((s) => ({ ...s, isLoading: false }));
         return;
       }
-      setState((s) => ({ ...s, isLoading: false, error: "Failed to load audio. Make sure the file is publicly accessible." }));
+      setState((s) => ({
+        ...s,
+        isLoading: false,
+        error: "Failed to load audio. Make sure the file is publicly accessible.",
+      }));
     };
 
     audio.addEventListener("timeupdate", onTimeUpdate);
@@ -100,33 +141,26 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     };
   }, []);
 
-  // Auto-play next track when currentIndex changes via "ended"
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (state.currentIndex >= 0 && state.currentIndex < tracks.length && !state.isPlaying && state.currentTrack) {
-      const expected = tracks[state.currentIndex];
-      if (expected && expected.id !== state.currentTrack.id) {
-        const url = getStreamUrl(expected.id);
-        audio.src = url;
-        audio.playbackRate = state.playbackRate;
-        audio.preservesPitch = state.playbackRate === 1;
-        setState((s) => ({ ...s, currentTrack: expected, currentTime: 0, duration: 0, isLoading: true, error: null }));
-        audio.play().catch(() => {});
-      }
-    }
-  }, [state.currentIndex]);
-
   const play = useCallback((track: DriveFile, index: number) => {
     const audio = audioRef.current;
     if (!audio) return;
+    const rate = playbackRateRef.current;
     const url = getStreamUrl(track.id);
     audio.src = url;
-    audio.playbackRate = state.playbackRate;
-    audio.preservesPitch = state.playbackRate === 1;
-    setState((s) => ({ ...s, currentTrack: track, currentIndex: index, currentTime: 0, duration: 0, isLoading: true, error: null, isPlaying: false }));
+    audio.playbackRate = rate;
+    audio.preservesPitch = rate === 1;
+    setState((s) => ({
+      ...s,
+      currentTrack: track,
+      currentIndex: index,
+      currentTime: 0,
+      duration: 0,
+      isLoading: true,
+      error: null,
+      isPlaying: false,
+    }));
     audio.play().catch(() => {});
-  }, [state.playbackRate]);
+  }, []);
 
   const togglePlayPause = useCallback(() => {
     const audio = audioRef.current;
@@ -157,44 +191,63 @@ export function useAudioPlayer(tracks: DriveFile[]) {
       audio.currentTime = 0;
       return;
     }
-    setState((s) => {
-      const nextIndex = Math.max(0, s.currentIndex - 1);
-      if (nextIndex === s.currentIndex) return s;
-      const track = tracks[nextIndex];
-      if (!track) return s;
-      const url = getStreamUrl(track.id);
-      audio.src = url;
-      audio.playbackRate = s.playbackRate;
-      audio.preservesPitch = s.playbackRate === 1;
-      audio.play().catch(() => {});
-      return { ...s, currentTrack: track, currentIndex: nextIndex, currentTime: 0, duration: 0, isLoading: true, error: null };
-    });
-  }, [tracks]);
+    const allTracks = tracksRef.current;
+    const currentIdx = currentIndexRef.current;
+    const nextIndex = Math.max(0, currentIdx - 1);
+    if (nextIndex === currentIdx) return;
+    const track = allTracks[nextIndex];
+    if (!track) return;
+    const rate = playbackRateRef.current;
+    const url = getStreamUrl(track.id);
+    audio.src = url;
+    audio.playbackRate = rate;
+    audio.preservesPitch = rate === 1;
+    audio.play().catch(() => {});
+    setState((s) => ({
+      ...s,
+      currentTrack: track,
+      currentIndex: nextIndex,
+      currentTime: 0,
+      duration: 0,
+      isLoading: true,
+      error: null,
+    }));
+  }, []);
 
   const nextTrack = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    setState((s) => {
-      const nextIndex = Math.min(tracks.length - 1, s.currentIndex + 1);
-      if (nextIndex === s.currentIndex) return s;
-      const track = tracks[nextIndex];
-      if (!track) return s;
-      const url = getStreamUrl(track.id);
-      audio.src = url;
-      audio.playbackRate = s.playbackRate;
-      audio.preservesPitch = s.playbackRate === 1;
-      audio.play().catch(() => {});
-      return { ...s, currentTrack: track, currentIndex: nextIndex, currentTime: 0, duration: 0, isLoading: true, error: null };
-    });
-  }, [tracks]);
+    const allTracks = tracksRef.current;
+    const currentIdx = currentIndexRef.current;
+    const nextIndex = Math.min(allTracks.length - 1, currentIdx + 1);
+    if (nextIndex === currentIdx) return;
+    const track = allTracks[nextIndex];
+    if (!track) return;
+    const rate = playbackRateRef.current;
+    const url = getStreamUrl(track.id);
+    audio.src = url;
+    audio.playbackRate = rate;
+    audio.preservesPitch = rate === 1;
+    audio.play().catch(() => {});
+    setState((s) => ({
+      ...s,
+      currentTrack: track,
+      currentIndex: nextIndex,
+      currentTime: 0,
+      duration: 0,
+      isLoading: true,
+      error: null,
+    }));
+  }, []);
 
   const setPlaybackRate = useCallback((rate: number) => {
     const clamped = Math.max(0.25, Math.min(2, Number(rate.toFixed(2))));
     const audio = audioRef.current;
     if (audio) {
       audio.playbackRate = clamped;
-      audio.preservesPitch = false; // pitch effect active: pitch changes with speed
+      audio.preservesPitch = false;
     }
+    playbackRateRef.current = clamped;
     localStorage.setItem("db_playbackRate", String(clamped));
     setState((s) => ({ ...s, playbackRate: clamped }));
   }, []);
@@ -205,7 +258,15 @@ export function useAudioPlayer(tracks: DriveFile[]) {
       audio.pause();
       audio.src = "";
     }
-    setState((s) => ({ ...s, currentTrack: null, currentIndex: -1, isPlaying: false, currentTime: 0, duration: 0, error: null }));
+    setState((s) => ({
+      ...s,
+      currentTrack: null,
+      currentIndex: -1,
+      isPlaying: false,
+      currentTime: 0,
+      duration: 0,
+      error: null,
+    }));
   }, []);
 
   const controls: PlayerControls = {
