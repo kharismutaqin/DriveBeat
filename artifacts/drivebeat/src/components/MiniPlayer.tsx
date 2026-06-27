@@ -406,7 +406,7 @@ function SleepPanel({
       {/* Seconds */}
       <div className="flex items-center bg-white/8 rounded-lg h-9">
         <button
-          onClick={() => onAdjust(-10)}
+          onClick={() => onAdjust(-1)}
           className="w-8 h-9 flex items-center justify-center text-white/40 transition-colors"
         >
           <Minus size={12} />
@@ -415,7 +415,7 @@ function SleepPanel({
           <span className="text-white/85 text-sm font-medium tabular-nums">{secs}</span>
         </div>
         <button
-          onClick={() => onAdjust(10)}
+          onClick={() => onAdjust(1)}
           className="w-8 h-9 flex items-center justify-center text-white/40 transition-colors"
         >
           <Plus size={12} />

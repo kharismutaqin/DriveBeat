@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 // ADJUST THIS VALUE to control marquee scroll speed
 // This is pixels scrolled per second. Larger = faster scroll.
 // ============================================================
-const SCROLL_SPEED_PX_PER_SEC = 10;
+const SCROLL_SPEED_PX_PER_SEC = 20;
 
 interface MarqueeTextProps {
   text: string;
