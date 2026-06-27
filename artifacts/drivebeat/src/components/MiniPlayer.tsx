@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { MarqueeText } from "./MarqueeText";
 import {
   SkipBack,
   SkipForward,
@@ -177,12 +178,12 @@ export function MiniPlayer({
                 transition={panelTransition}
               >
                 {/* Track name */}
-                <p
-                  className="text-white/80 text-sm font-medium text-center leading-snug mb-3"
-                  data-testid="text-track-name"
-                >
-                  {displayName}
-                </p>
+                <div className="mb-3 px-4">
+                  <MarqueeText
+                    text={displayName}
+                    className="text-white/80 text-sm font-medium text-center leading-snug"
+                  />
+                </div>
 
                 {/* Progress bar */}
                 <div className="flex items-center gap-3">

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Music2, Loader2, Pencil, Check, X, GripVertical } from "lucide-react";
 import type { DriveFile } from "../lib/drive";
 import { cleanTrackName } from "../lib/drive";
+import { MarqueeText } from "./MarqueeText";
 
 interface TrackListProps {
   tracks: DriveFile[];
@@ -219,11 +220,12 @@ export function TrackList({
 
                     {/* Track name */}
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm truncate font-[Outfit] leading-snug ${
-                        isActive && !isManageMode ? "text-white" : "text-white/65"
-                      }`}>
-                        {displayName}
-                      </p>
+                      <MarqueeText
+                        text={displayName}
+                        className={`text-sm font-[Outfit] leading-snug ${
+                          isActive && !isManageMode ? "text-white" : "text-white/65"
+                        }`}
+                      />
                     </div>
                   </button>
 
