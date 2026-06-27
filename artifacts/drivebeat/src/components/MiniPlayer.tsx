@@ -81,6 +81,7 @@ export function MiniPlayer({
       controls.stop();
       setSleepTotalSeconds(0);
       setSleepRemaining(0);
+      setShowSleep(false);
     }, totalMs);
   };
 
