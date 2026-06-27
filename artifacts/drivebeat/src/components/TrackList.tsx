@@ -156,14 +156,14 @@ export function TrackList({
                   />
                   <button
                     onClick={() => commitEdit(track.id)}
-                    className="p-1.5 text-white/50 hover:text-white/90 transition-colors shrink-0"
+                    className="p-1.5 text-white/50 transition-colors shrink-0"
                     data-testid={`button-rename-confirm-${track.id}`}
                   >
                     <Check size={14} />
                   </button>
                   <button
                     onClick={cancelEdit}
-                    className="p-1.5 text-white/30 hover:text-white/65 transition-colors shrink-0"
+                    className="p-1.5 text-white/30 transition-colors shrink-0"
                     data-testid={`button-rename-cancel-${track.id}`}
                   >
                     <X size={14} />
@@ -201,7 +201,7 @@ export function TrackList({
                     data-testid={`track-item-${track.id}`}
                     className={`flex-1 flex items-center gap-3 py-3.5 text-left min-w-0
                       ${isManageMode ? "pl-1 pr-2 cursor-default" : "px-4 transition-colors active:bg-white/5"}
-                      ${isActive && !isManageMode ? "bg-white/[0.06]" : !isManageMode ? "hover:bg-white/[0.03]" : ""}
+                      ${isActive && !isManageMode ? "bg-white/[0.06]" : ""}
                     `}
                   >
                     {/* Number / playing indicator (normal mode only) */}

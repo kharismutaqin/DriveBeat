@@ -201,10 +201,6 @@ export function MiniPlayer({
                       className="h-full bg-white/70 rounded-full transition-none"
                       style={{ width: `${progress * 100}%` }}
                     />
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1/2"
-                      style={{ left: `${progress * 100}%` }}
-                    />
                   </div>
                   <span
                     className="text-[11px] text-white/30 tabular-nums shrink-0 w-10"
@@ -233,7 +229,7 @@ export function MiniPlayer({
             className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
               showSpeed || playbackRate !== 1
                 ? "bg-white/12 text-white/80"
-                : "bg-transparent text-white/30 hover:text-white/55"
+                : "bg-transparent text-white/30"
             }`}
           >
             <CircleGauge size={18} />
@@ -244,7 +240,7 @@ export function MiniPlayer({
             <button
               onClick={() => controls.seekBy(-5)}
               data-testid="button-seek-back"
-              className="text-white/40 hover:text-white/75 transition-colors p-1.5 rounded-lg hover:bg-white/6"
+              className="text-white/40 transition-colors p-1.5 rounded-lg"
               title="Rewind 5 seconds"
             >
               <span className="flex items-center gap-0.5">
@@ -255,7 +251,7 @@ export function MiniPlayer({
             <button
               onClick={controls.prevTrack}
               data-testid="button-prev"
-              className="text-white/50 hover:text-white/80 transition-colors p-1.5 rounded-lg hover:bg-white/6"
+              className="text-white/50 transition-colors p-1.5 rounded-lg"
             >
               <SkipBack size={18} />
             </button>
@@ -263,7 +259,7 @@ export function MiniPlayer({
             <button
               onClick={controls.togglePlayPause}
               data-testid="button-play-pause"
-              className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center transition-transform active:scale-95 hover:bg-white/90"
+              className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center transition-transform active:scale-95"
             >
               {isLoading ? (
                 <Loader2 size={18} className="animate-spin" />
@@ -277,7 +273,7 @@ export function MiniPlayer({
             <button
               onClick={controls.nextTrack}
               data-testid="button-next"
-              className="text-white/50 hover:text-white/80 transition-colors p-1.5 rounded-lg hover:bg-white/6"
+              className="text-white/50 transition-colors p-1.5 rounded-lg"
             >
               <SkipForward size={18} />
             </button>
@@ -285,7 +281,7 @@ export function MiniPlayer({
             <button
               onClick={() => controls.seekBy(5)}
               data-testid="button-seek-forward"
-              className="text-white/40 hover:text-white/75 transition-colors p-1.5 rounded-lg hover:bg-white/6"
+              className="text-white/40 transition-colors p-1.5 rounded-lg"
               title="Forward 5 seconds"
             >
               <span className="flex items-center gap-0.5">
@@ -307,7 +303,7 @@ export function MiniPlayer({
             className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
               showSleep || isSleepActive
                 ? "bg-white/12 text-white/80"
-                : "bg-transparent text-white/30 hover:text-white/55"
+                : "bg-transparent text-white/30"
             }`}
           >
             <Timer size={18} />
@@ -332,7 +328,7 @@ function SpeedPanel({
         onClick={() =>
           onChange(Math.max(0.25, Number((playbackRate - SPEED_STEP).toFixed(2))))
         }
-        className="w-10 h-9 flex items-center justify-center rounded-lg bg-white/8 text-white/55 hover:bg-white/15 hover:text-white/80 transition-colors shrink-0"
+        className="w-10 h-9 flex items-center justify-center rounded-lg bg-white/8 text-white/55 transition-colors shrink-0"
         data-testid="button-speed-minus"
       >
         <Minus size={16} />
@@ -348,7 +344,7 @@ function SpeedPanel({
         onClick={() =>
           onChange(Math.min(2, Number((playbackRate + SPEED_STEP).toFixed(2))))
         }
-        className="w-10 h-9 flex items-center justify-center rounded-lg bg-white/8 text-white/55 hover:bg-white/15 hover:text-white/80 transition-colors shrink-0"
+        className="w-10 h-9 flex items-center justify-center rounded-lg bg-white/8 text-white/55 transition-colors shrink-0"
         data-testid="button-speed-plus"
       >
         <Plus size={16} />
@@ -357,7 +353,7 @@ function SpeedPanel({
       <button
         onClick={() => onChange(1)}
         data-testid="button-speed-reset"
-        className="h-9 px-2.5 rounded-lg text-sm font-medium transition-colors bg-white/8 text-white/55 hover:bg-white/12 hover:text-white/80 shrink-0"
+        className="h-9 px-2.5 rounded-lg text-sm font-medium transition-colors bg-white/8 text-white/55 shrink-0"
       >
         Reset
       </button>
@@ -389,7 +385,7 @@ function SleepPanel({
       <div className="flex items-center bg-white/8 rounded-lg h-9">
         <button
           onClick={() => onAdjust(-60)}
-          className="w-8 h-9 flex items-center justify-center text-white/40 hover:text-white/75 transition-colors"
+          className="w-8 h-9 flex items-center justify-center text-white/40 transition-colors"
         >
           <Minus size={12} />
         </button>
@@ -398,7 +394,7 @@ function SleepPanel({
         </div>
         <button
           onClick={() => onAdjust(60)}
-          className="w-8 h-9 flex items-center justify-center text-white/40 hover:text-white/75 transition-colors"
+          className="w-8 h-9 flex items-center justify-center text-white/40 transition-colors"
         >
           <Plus size={12} />
         </button>
@@ -410,7 +406,7 @@ function SleepPanel({
       <div className="flex items-center bg-white/8 rounded-lg h-9">
         <button
           onClick={() => onAdjust(-10)}
-          className="w-8 h-9 flex items-center justify-center text-white/40 hover:text-white/75 transition-colors"
+          className="w-8 h-9 flex items-center justify-center text-white/40 transition-colors"
         >
           <Minus size={12} />
         </button>
@@ -419,7 +415,7 @@ function SleepPanel({
         </div>
         <button
           onClick={() => onAdjust(10)}
-          className="w-8 h-9 flex items-center justify-center text-white/40 hover:text-white/75 transition-colors"
+          className="w-8 h-9 flex items-center justify-center text-white/40 transition-colors"
         >
           <Plus size={12} />
         </button>
@@ -427,7 +423,7 @@ function SleepPanel({
 
       <button
         onClick={onCancel}
-        className="h-9 px-3 rounded-lg text-xs font-medium transition-colors bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90 shrink-0"
+        className="h-9 px-3 rounded-lg text-xs font-medium transition-colors bg-white/10 text-white/70 shrink-0"
       >
         Reset
       </button>

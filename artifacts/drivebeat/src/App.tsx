@@ -1,5 +1,14 @@
 import { useReducer, useEffect, useCallback, useState, useRef } from "react";
-import { ChevronDown, FolderOpen, Loader2, Pencil, Check, X, SlidersHorizontal, ChevronUp } from "lucide-react";
+import {
+  ChevronDown,
+  FolderOpen,
+  Loader2,
+  Pencil,
+  Check,
+  X,
+  Menu,
+  ChevronUp,
+} from "lucide-react";
 import { FolderModal } from "./components/FolderModal";
 import { TrackList } from "./components/TrackList";
 import { MiniPlayer } from "./components/MiniPlayer";
@@ -72,7 +81,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
     }
     case "syncActiveIndex": {
       const allFolders = getFolders();
-      if (allFolders.length > 0 && state.activeFolderIndex >= allFolders.length) {
+      if (
+        allFolders.length > 0 &&
+        state.activeFolderIndex >= allFolders.length
+      ) {
         return { ...state, activeFolderIndex: allFolders.length - 1 };
       }
       return state;
@@ -119,7 +131,8 @@ export default function App() {
   } = state;
 
   const activeFolder = folders[activeFolderIndex] ?? null;
-  const { state: playerState, controls: playerControls } = useAudioPlayer(tracks);
+  const { state: playerState, controls: playerControls } =
+    useAudioPlayer(tracks);
 
   // ── Manage mode ─────────────────────────────────────────────────
   const [isManageMode, setIsManageMode] = useState(false);
@@ -133,7 +146,7 @@ export default function App() {
 
   // ── Track renames ──────────────────────────────────────────────
   const [trackRenames, setTrackRenamesState] = useState<Record<string, string>>(
-    () => (activeFolder ? getTrackRenames(activeFolder.id) : {})
+    () => (activeFolder ? getTrackRenames(activeFolder.id) : {}),
   );
 
   useEffect(() => {
@@ -157,8 +170,8 @@ export default function App() {
   };
 
   // ── Folder rename ───────────────────────────────────────────────
-  const [folderDisplayName, setFolderDisplayName] = useState<string>(
-    () => (activeFolder ? (getFolderRename(activeFolder.id) ?? activeFolder.name) : "")
+  const [folderDisplayName, setFolderDisplayName] = useState<string>(() =>
+    activeFolder ? (getFolderRename(activeFolder.id) ?? activeFolder.name) : "",
   );
   const [isRenamingFolder, setIsRenamingFolder] = useState(false);
   const [folderRenameValue, setFolderRenameValue] = useState("");
@@ -197,8 +210,10 @@ export default function App() {
     [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
     saveFolderOrder(arr);
     dispatch({ type: "setFolders", folders: arr });
-    if (activeFolderIndex === index) dispatch({ type: "setActiveFolderIndex", index: index - 1 });
-    else if (activeFolderIndex === index - 1) dispatch({ type: "setActiveFolderIndex", index });
+    if (activeFolderIndex === index)
+      dispatch({ type: "setActiveFolderIndex", index: index - 1 });
+    else if (activeFolderIndex === index - 1)
+      dispatch({ type: "setActiveFolderIndex", index });
   };
 
   const handleMoveFolderDown = (index: number) => {
@@ -207,13 +222,17 @@ export default function App() {
     [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
     saveFolderOrder(arr);
     dispatch({ type: "setFolders", folders: arr });
-    if (activeFolderIndex === index) dispatch({ type: "setActiveFolderIndex", index: index + 1 });
-    else if (activeFolderIndex === index + 1) dispatch({ type: "setActiveFolderIndex", index });
+    if (activeFolderIndex === index)
+      dispatch({ type: "setActiveFolderIndex", index: index + 1 });
+    else if (activeFolderIndex === index + 1)
+      dispatch({ type: "setActiveFolderIndex", index });
   };
 
   // ── Inline add folder ───────────────────────────────────────────
   const [inlineLink, setInlineLink] = useState("");
-  const [inlineStatus, setInlineStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [inlineStatus, setInlineStatus] = useState<
+    "idle" | "loading" | "error"
+  >("idle");
   const inlineInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -227,13 +246,25 @@ export default function App() {
   const handleInlineSubmit = async () => {
     const trimmed = inlineLink.trim();
     if (!trimmed) return;
-    if (!isApiKeyConfigured()) { setInlineStatus("error"); return; }
+    if (!isApiKeyConfigured()) {
+      setInlineStatus("error");
+      return;
+    }
     const folderId = extractFolderId(trimmed);
-    if (!folderId) { setInlineStatus("error"); return; }
+    if (!folderId) {
+      setInlineStatus("error");
+      return;
+    }
     setInlineStatus("loading");
     try {
-      const [name, files] = await Promise.all([fetchFolderName(folderId), fetchAudioFiles(folderId)]);
-      if (files.length === 0) { setInlineStatus("error"); return; }
+      const [name, files] = await Promise.all([
+        fetchFolderName(folderId),
+        fetchAudioFiles(folderId),
+      ]);
+      if (files.length === 0) {
+        setInlineStatus("error");
+        return;
+      }
       const folder: DriveFolder = { id: folderId, name, link: trimmed };
       saveFolder(folder);
       saveTracks(folderId, files);
@@ -290,8 +321,10 @@ export default function App() {
     playerControls.stop();
   };
 
-  const setShowFolderModal = (show: boolean) => dispatch({ type: "setShowFolderModal", show });
-  const setShowFolderPicker = (show: boolean) => dispatch({ type: "setShowFolderPicker", show });
+  const setShowFolderModal = (show: boolean) =>
+    dispatch({ type: "setShowFolderModal", show });
+  const setShowFolderPicker = (show: boolean) =>
+    dispatch({ type: "setShowFolderPicker", show });
 
   const hasNoFolders = folders.length === 0;
 
@@ -323,10 +356,18 @@ export default function App() {
                     outline-none focus:ring-1 focus:ring-white/20 min-w-0"
                   data-testid="input-rename-folder"
                 />
-                <button onClick={commitFolderRename} className="p-1.5 text-white/50 hover:text-white/90 transition-colors shrink-0" data-testid="button-rename-folder-confirm">
+                <button
+                  onClick={commitFolderRename}
+                  className="p-1.5 text-white/50 transition-colors shrink-0"
+                  data-testid="button-rename-folder-confirm"
+                >
                   <Check size={14} />
                 </button>
-                <button onClick={cancelFolderRename} className="p-1.5 text-white/30 hover:text-white/65 transition-colors shrink-0" data-testid="button-rename-folder-cancel">
+                <button
+                  onClick={cancelFolderRename}
+                  className="p-1.5 text-white/30 transition-colors shrink-0"
+                  data-testid="button-rename-folder-cancel"
+                >
                   <X size={14} />
                 </button>
               </div>
@@ -334,13 +375,18 @@ export default function App() {
               /* Folder name row */
               <div className="flex-1 min-w-0 flex items-center gap-2">
                 {folders.length === 1 ? (
-                  <h1 className="text-white/75 text-sm font-medium truncate" data-testid="text-folder-name">
+                  <h1
+                    className="text-white/75 text-sm font-medium truncate"
+                    data-testid="text-folder-name"
+                  >
                     {folderDisplayName}
                   </h1>
                 ) : (
                   <button
-                    onClick={() => { setShowFolderPicker(!showFolderPicker); }}
-                    className="flex items-center gap-1.5 text-white/75 text-sm font-medium hover:text-white/90 transition-colors min-w-0"
+                    onClick={() => {
+                      setShowFolderPicker(!showFolderPicker);
+                    }}
+                    className="flex items-center gap-1.5 text-white/75 text-sm font-medium transition-colors min-w-0"
                     data-testid="button-folder-picker"
                   >
                     <span className="truncate">{folderDisplayName}</span>
@@ -354,7 +400,7 @@ export default function App() {
                 {isManageMode && (
                   <button
                     onClick={startFolderRename}
-                    className="p-1 text-white/35 hover:text-white/70 transition-colors rounded shrink-0"
+                    className="p-1 text-white/35 transition-colors rounded shrink-0"
                     data-testid="button-rename-folder"
                     title="Rename folder"
                   >
@@ -368,20 +414,20 @@ export default function App() {
             <button
               onClick={() => {
                 if (isManageMode) exitManageMode();
-                else { setIsManageMode(true); setShowFolderPicker(false); }
+                else {
+                  setIsManageMode(true);
+                  setShowFolderPicker(false);
+                }
               }}
               data-testid="button-manage"
               className={`p-1.5 rounded-lg transition-colors shrink-0 ${
                 isManageMode
                   ? "text-white/70 bg-white/10"
-                  : "text-white/30 hover:text-white/65 hover:bg-white/6"
+                  : "text-white/30"
               }`}
               title={isManageMode ? "Done" : "Manage"}
             >
-              {isManageMode
-                ? <X size={16} />
-                : <SlidersHorizontal size={16} />
-              }
+              {isManageMode ? <X size={16} /> : <Menu size={16} />}
             </button>
           </div>
 
@@ -399,7 +445,10 @@ export default function App() {
                   ref={inlineInputRef}
                   type="url"
                   value={inlineLink}
-                  onChange={(e) => { setInlineLink(e.target.value); setInlineStatus("idle"); }}
+                  onChange={(e) => {
+                    setInlineLink(e.target.value);
+                    setInlineStatus("idle");
+                  }}
                   onKeyDown={handleInlineKeyDown}
                   placeholder="Paste Drive folder link..."
                   disabled={inlineStatus === "loading"}
@@ -411,13 +460,14 @@ export default function App() {
                   disabled={inlineStatus === "loading" || !inlineLink.trim()}
                   data-testid="button-inline-load-folder"
                   className="h-8 w-8 flex items-center justify-center rounded-lg text-white/55
-                    hover:bg-white/10 hover:text-white/80 transition-colors
+                    transition-colors
                     disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
                 >
-                  {inlineStatus === "loading"
-                    ? <Loader2 size={14} className="animate-spin" />
-                    : <FolderOpen size={14} />
-                  }
+                  {inlineStatus === "loading" ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <FolderOpen size={14} />
+                  )}
                 </button>
               </div>
             </div>
@@ -436,7 +486,9 @@ export default function App() {
                   onClick={() => handleSelectFolder(index)}
                   data-testid={`button-folder-${folder.id}`}
                   className={`flex-1 text-left px-4 py-3 text-sm transition-colors ${
-                    index === activeFolderIndex ? "text-white/90" : "text-white/40 hover:text-white/70"
+                    index === activeFolderIndex
+                      ? "text-white/90"
+                      : "text-white/40"
                   }`}
                 >
                   {displayName}
@@ -446,7 +498,7 @@ export default function App() {
                     <button
                       onClick={() => handleMoveFolderUp(index)}
                       disabled={index === 0}
-                      className="p-1.5 text-white/25 hover:text-white/65 disabled:opacity-20 transition-colors"
+                      className="p-1.5 text-white/25 disabled:opacity-20 transition-colors"
                       data-testid={`button-folder-up-${folder.id}`}
                     >
                       <ChevronUp size={14} />
@@ -454,7 +506,7 @@ export default function App() {
                     <button
                       onClick={() => handleMoveFolderDown(index)}
                       disabled={index === folders.length - 1}
-                      className="p-1.5 text-white/25 hover:text-white/65 disabled:opacity-20 transition-colors"
+                      className="p-1.5 text-white/25 disabled:opacity-20 transition-colors"
                       data-testid={`button-folder-down-${folder.id}`}
                     >
                       <ChevronUp size={14} className="rotate-180" />
@@ -462,20 +514,11 @@ export default function App() {
                     <button
                       onClick={() => handleRemoveFolder(index)}
                       data-testid={`button-remove-folder-${folder.id}`}
-                      className="px-2 py-1.5 text-red-400/50 hover:text-red-400/80 transition-colors text-xs"
+                      className="px-2 py-1.5 text-red-400/50 transition-colors text-xs"
                     >
                       remove
                     </button>
                   </div>
-                )}
-                {!isManageMode && (
-                  <button
-                    onClick={() => handleRemoveFolder(index)}
-                    data-testid={`button-remove-folder-${folder.id}`}
-                    className="px-4 py-3 text-white/15 hover:text-red-400/60 transition-colors text-xs opacity-0 group-hover:opacity-100"
-                  >
-                    remove
-                  </button>
                 )}
               </div>
             );
@@ -506,7 +549,11 @@ export default function App() {
       )}
 
       {/* Mini player */}
-      <MiniPlayer state={playerState} controls={playerControls} trackRenames={trackRenames} />
+      <MiniPlayer
+        state={playerState}
+        controls={playerControls}
+        trackRenames={trackRenames}
+      />
     </div>
   );
 }

@@ -97,7 +97,7 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
           {canClose && onClose && (
             <button
               onClick={onClose}
-              className="text-white/30 hover:text-white/70 transition-colors p-1 rounded-lg"
+              className="text-white/30 transition-colors p-1 rounded-lg"
               data-testid="button-close-modal"
             >
               <X size={16} />
@@ -133,7 +133,7 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
           onClick={handleSubmit}
           disabled={status === "loading" || !link.trim()}
           className="mt-4 w-full py-2.5 rounded-xl text-sm font-medium transition-all
-            bg-white text-black hover:bg-white/90 active:bg-white/80
+            bg-white text-black active:bg-white/80
             disabled:bg-white/10 disabled:text-white/25 disabled:cursor-not-allowed"
           data-testid="button-load-folder"
         >
