@@ -20,6 +20,7 @@ export interface PlayerControls {
   seekBy: (delta: number) => void;
   prevTrack: () => void;
   nextTrack: () => void;
+  shuffle: () => void;
   setPlaybackRate: (rate: number) => void;
   stop: () => void;
 }
@@ -252,6 +253,30 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     setState((s) => ({ ...s, playbackRate: clamped }));
   }, []);
 
+  const shuffle = useCallback(() => {
+    const allTracks = tracksRef.current;
+    if (allTracks.length === 0) return;
+    const audio = audioRef.current;
+    if (!audio) return;
+    const randomIndex = Math.floor(Math.random() * allTracks.length);
+    const track = allTracks[randomIndex];
+    const rate = playbackRateRef.current;
+    const url = getStreamUrl(track.id);
+    audio.src = url;
+    audio.playbackRate = rate;
+    audio.preservesPitch = rate === 1;
+    audio.play().catch(() => {});
+    setState((s) => ({
+      ...s,
+      currentTrack: track,
+      currentIndex: randomIndex,
+      currentTime: 0,
+      duration: 0,
+      isLoading: true,
+      error: null,
+    }));
+  }, []);
+
   const stop = useCallback(() => {
     const audio = audioRef.current;
     if (audio) {
@@ -276,6 +301,7 @@ export function useAudioPlayer(tracks: DriveFile[]) {
     seekBy,
     prevTrack,
     nextTrack,
+    shuffle,
     setPlaybackRate,
     stop,
   };
