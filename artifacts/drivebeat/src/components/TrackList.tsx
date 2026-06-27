@@ -220,32 +220,16 @@ export function TrackList({
                     {/* Track name */}
                     <div className="flex-1 min-w-0">
                       {(() => {
-                        const END_KEEP = 12;
-                        const MIN_DOTS = 3;
-                        const MAX_VISIBLE = 36; // rough char cap for mobile track row
-                        if (displayName.length <= MAX_VISIBLE) {
-                          return (
-                            <p className={`text-sm font-[Outfit] leading-snug truncate ${
-                              isActive && !isManageMode ? "text-white" : "text-white/65"
-                            }`}>
-                              {displayName}
-                            </p>
-                          );
-                        }
-                        const end = displayName.slice(-END_KEEP);
-                        const startCap = MAX_VISIBLE - END_KEEP - MIN_DOTS;
-                        const rawStart = displayName.slice(0, startCap);
-                        const lastSpace = rawStart.lastIndexOf(" ");
-                        const start = lastSpace > 2
-                          ? rawStart.slice(0, lastSpace)
-                          : rawStart;
+                        const keepEnd = 10;
+                        const showMiddle = displayName.length > keepEnd + 4;
+                        const start = showMiddle ? displayName.slice(0, displayName.length - keepEnd) : displayName;
+                        const end = showMiddle ? displayName.slice(-keepEnd) : "";
                         return (
                           <div className={`text-sm ellipsize-middle font-[Outfit] leading-snug ${
                             isActive && !isManageMode ? "text-white" : "text-white/65"
                           }`}>
                             <span className="em-start">{start}</span>
-                            <span className="em-dots">{".".repeat(MIN_DOTS)}</span>
-                            <span className="em-end">{end}</span>
+                            {end && <span className="em-end">{end}</span>}
                           </div>
                         );
                       })()}

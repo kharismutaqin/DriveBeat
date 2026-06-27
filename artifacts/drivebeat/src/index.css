@@ -241,15 +241,9 @@
 
   .ellipsize-middle .em-start {
     overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
-    flex: 1 1 auto;
     min-width: 1em;
-  }
-
-  .ellipsize-middle .em-dots {
-    white-space: nowrap;
-    flex-shrink: 0;
-    padding: 0 1px;
   }
 
   .ellipsize-middle .em-end {
