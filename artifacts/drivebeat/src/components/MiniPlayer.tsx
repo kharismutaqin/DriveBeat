@@ -288,7 +288,13 @@ export function MiniPlayer({
             </button>
 
             <button
-              onClick={controls.togglePlayPause}
+              onClick={() => {
+                if (currentTrack) {
+                  controls.togglePlayPause();
+                } else if (hasTracks) {
+                  controls.shufflePlay();
+                }
+              }}
               data-testid="button-play-pause"
               className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center transition-transform active:scale-95"
             >
