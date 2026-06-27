@@ -1,15 +1,19 @@
 import { useRef, useEffect, useState } from "react";
 
+// ============================================================
+// ADJUST THIS VALUE to control marquee scroll speed (seconds)
+// Larger = slower, Smaller = faster
+// ============================================================
+const MARQUEE_DURATION_SECONDS = 12;
+
 interface MarqueeTextProps {
   text: string;
   className?: string;
-  speed?: number; // seconds per 100px of text
 }
 
 export function MarqueeText({
   text,
   className = "",
-  speed = 0.18,
 }: MarqueeTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
@@ -30,11 +34,6 @@ export function MarqueeText({
     return () => observer.disconnect();
   }, [text]);
 
-  const duration = Math.max(3, measureRef.current
-    ? (measureRef.current.scrollWidth / 100) * speed
-    : text.length * 0.2
-  );
-
   return (
     <div ref={containerRef} className={`overflow-hidden ${className}`}>
       {/* Hidden measurement element */}
@@ -49,7 +48,7 @@ export function MarqueeText({
       {shouldScroll ? (
         <div
           className="flex whitespace-nowrap animate-marquee"
-          style={{ animationDuration: `${duration}s` }}
+          style={{ animationDuration: `${MARQUEE_DURATION_SECONDS}s` }}
         >
           <span className="shrink-0 pr-8">{text}</span>
           <span className="shrink-0 pr-8">{text}</span>
