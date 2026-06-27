@@ -231,6 +231,25 @@
     overflow: hidden;
     white-space: nowrap;
   }
+
+  .ellipsize-middle {
+    display: flex;
+    overflow: hidden;
+    white-space: nowrap;
+    align-items: baseline;
+  }
+
+  .ellipsize-middle .em-start {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 1em;
+  }
+
+  .ellipsize-middle .em-end {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
 }
 
 @keyframes popup-slide-up {

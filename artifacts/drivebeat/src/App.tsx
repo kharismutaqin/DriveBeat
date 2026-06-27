@@ -1,7 +1,7 @@
 import { useReducer, useEffect, useCallback, useState, useRef } from "react";
 import {
   ChevronDown,
-  FolderOpen,
+  FolderSymlink,
   Loader2,
   Pencil,
   Check,
@@ -466,7 +466,7 @@ export default function App() {
                   {inlineStatus === "loading" ? (
                     <Loader2 size={14} className="animate-spin" />
                   ) : (
-                    <FolderOpen size={14} />
+                    <FolderSymlink size={14} />
                   )}
                 </button>
               </div>

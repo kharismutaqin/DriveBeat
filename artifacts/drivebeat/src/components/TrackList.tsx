@@ -219,11 +219,20 @@ export function TrackList({
 
                     {/* Track name */}
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm ellipsize-start font-[Outfit] leading-snug ${
-                        isActive && !isManageMode ? "text-white" : "text-white/65"
-                      }`}>
-                        {displayName}
-                      </p>
+                      {(() => {
+                        const keepEnd = 10;
+                        const showMiddle = displayName.length > keepEnd + 4;
+                        const start = showMiddle ? displayName.slice(0, displayName.length - keepEnd) : displayName;
+                        const end = showMiddle ? displayName.slice(-keepEnd) : "";
+                        return (
+                          <div className={`text-sm ellipsize-middle font-[Outfit] leading-snug ${
+                            isActive && !isManageMode ? "text-white" : "text-white/65"
+                          }`}>
+                            <span className="em-start">{start}</span>
+                            {end && <span className="em-end">{end}</span>}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </button>
 
