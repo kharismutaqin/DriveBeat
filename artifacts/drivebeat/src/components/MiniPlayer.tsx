@@ -128,9 +128,11 @@ export function MiniPlayer({
     ? "speed"
     : showSleep
     ? "sleep"
-    : currentTrack
+    : currentTrack && isPlaying
     ? "track"
-    : "shuffle";
+    : hasTracks
+    ? "shuffle"
+    : null;
 
   return (
     <div
