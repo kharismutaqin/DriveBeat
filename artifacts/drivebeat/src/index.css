@@ -201,7 +201,6 @@ html, body, #root {
     -webkit-font-smoothing: antialiased;
   }
 }
-}
 
 @layer utilities {
   input[type="search"]::-webkit-search-cancel-button {
