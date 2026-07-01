@@ -103,9 +103,17 @@ export function formatDuration(seconds: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
+function toTitleCase(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/(?:^|[\s\-_]+)(\w)/g, (_, ch) => (ch ? " " + ch.toUpperCase() : ""))
+    .trim();
+}
+
 export function cleanTrackName(name: string): string {
-  return name
+  const cleaned = name
     .replace(/\.[^/.]+$/, "")
     .replace(/^\d+[\.\-_\s]+/, "")
     .trim();
+  return toTitleCase(cleaned);
 }
