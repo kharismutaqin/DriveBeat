@@ -42,8 +42,8 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=19432 BASE_PATH=/ pnpm --filter @workspace/drivebeat run dev"
-waitForPort = 19432
+args = "PORT=3000 BASE_PATH=/ pnpm --filter @workspace/drivebeat run dev"
+waitForPort = 3000
 
 [workflows.workflow.metadata]
 outputType = "webview"
