@@ -133,7 +133,7 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
           onClick={handleSubmit}
           disabled={status === "loading" || !link.trim()}
           className="mt-4 w-full py-2.5 rounded-xl text-sm font-medium transition-all
-            bg-white text-black active:bg-foreground/80
+            bg-primary text-primary-foreground active:bg-primary/80
             disabled:bg-foreground/10 disabled:text-foreground/25 disabled:cursor-not-allowed"
           data-testid="button-load-folder"
         >

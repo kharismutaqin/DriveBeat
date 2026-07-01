@@ -299,14 +299,14 @@ export function MiniPlayer({
                 }
               }}
               data-testid="button-play-pause"
-              className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center transition-transform active:scale-95"
+              className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center transition-transform active:scale-95"
             >
               {isLoading ? (
                 <Loader2 size={18} className="animate-spin" />
               ) : isPlaying ? (
-                <Pause size={18} fill="black" />
+                <Pause size={18} fill="currentColor" />
               ) : (
-                <Play size={18} fill="black" className="ml-0.5" />
+                <Play size={18} fill="currentColor" className="ml-0.5" />
               )}
             </button>
 

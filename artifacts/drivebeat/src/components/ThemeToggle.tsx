@@ -13,7 +13,7 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <button
-        className="p-1.5 rounded-lg transition-colors shrink-0 text-white/30"
+        className="p-1.5 rounded-lg transition-colors shrink-0 text-foreground/30"
         aria-label="Toggle theme"
       >
         <Sun size={16} />
@@ -28,8 +28,8 @@ export function ThemeToggle() {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={`p-1.5 rounded-lg transition-colors shrink-0 ${
         isDark
-          ? "text-white/30 hover:text-white/70"
-          : "text-black/40 hover:text-black/70"
+          ? "text-foreground/30 hover:text-foreground/70"
+          : "text-foreground/40 hover:text-foreground/70"
       }`}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
       aria-label="Toggle theme"
