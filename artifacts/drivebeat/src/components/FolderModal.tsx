@@ -88,16 +88,16 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
         }
       }}
     >
-      <div className="w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 shadow-2xl">
+      <div className="w-full max-w-sm bg-[#0a0a0a] border border-border/10 rounded-2xl p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="text-white text-base font-semibold tracking-tight">DriveBeat</h2>
-            <p className="text-white/35 text-xs mt-0.5">Paste a Google Drive folder link</p>
+            <p className="text-foreground/35 text-xs mt-0.5">Paste a Google Drive folder link</p>
           </div>
           {canClose && onClose && (
             <button
               onClick={onClose}
-              className="text-white/30 transition-colors p-1 rounded-lg"
+              className="text-foreground/30 transition-colors p-1 rounded-lg"
               data-testid="button-close-modal"
             >
               <X size={16} />
@@ -105,10 +105,10 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
           )}
         </div>
 
-        <div className={`flex items-center gap-2 bg-white/5 border rounded-xl px-3 py-2.5 transition-colors ${
-          status === "error" ? "border-red-500/40" : "border-white/10 focus-within:border-white/25"
+        <div className={`flex items-center gap-2 bg-foreground/5 border rounded-xl px-3 py-2.5 transition-colors ${
+          status === "error" ? "border-red-500/40" : "border-border/10 focus-within:border-border/25"
         }`}>
-          <Link2 size={14} className="text-white/30 shrink-0" />
+          <Link2 size={14} className="text-foreground/30 shrink-0" />
           <input
             ref={inputRef}
             type="url"
@@ -116,11 +116,11 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
             onChange={(e) => { setLink(e.target.value); setStatus("idle"); setErrorMsg(""); }}
             onKeyDown={handleKeyDown}
             placeholder="https://drive.google.com/drive/folders/..."
-            className="flex-1 bg-transparent text-white/80 text-sm placeholder:text-white/20 outline-none font-[Outfit]"
+            className="flex-1 bg-transparent text-foreground/80 text-sm placeholder:text-foreground/20 outline-none font-[Outfit]"
             data-testid="input-folder-link"
             disabled={status === "loading"}
           />
-          {status === "loading" && <Loader2 size={14} className="text-white/40 shrink-0 animate-spin" />}
+          {status === "loading" && <Loader2 size={14} className="text-foreground/40 shrink-0 animate-spin" />}
         </div>
 
         {errorMsg && (
@@ -133,14 +133,14 @@ export function FolderModal({ onFolderAdded, onClose, canClose = false }: Folder
           onClick={handleSubmit}
           disabled={status === "loading" || !link.trim()}
           className="mt-4 w-full py-2.5 rounded-xl text-sm font-medium transition-all
-            bg-white text-black active:bg-white/80
-            disabled:bg-white/10 disabled:text-white/25 disabled:cursor-not-allowed"
+            bg-white text-black active:bg-foreground/80
+            disabled:bg-foreground/10 disabled:text-foreground/25 disabled:cursor-not-allowed"
           data-testid="button-load-folder"
         >
           {status === "loading" ? "Loading..." : "Load Music"}
         </button>
 
-        <p className="text-white/20 text-xs text-center mt-3 leading-relaxed">
+        <p className="text-foreground/20 text-xs text-center mt-3 leading-relaxed">
           Folder must be set to public to be accessible
         </p>
       </div>

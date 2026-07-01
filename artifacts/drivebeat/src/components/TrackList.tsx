@@ -110,7 +110,7 @@ export function TrackList({
   // ── Render guards ───────────────────────────────────────────────
   if (isLoadingTracks) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-3 text-white/25">
+      <div className="flex-1 flex flex-col items-center justify-center gap-3 text-foreground/25">
         <Loader2 size={20} className="animate-spin" />
         <span className="text-sm">Loading music list...</span>
       </div>
@@ -119,7 +119,7 @@ export function TrackList({
 
   if (tracks.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-3 text-white/25">
+      <div className="flex-1 flex flex-col items-center justify-center gap-3 text-foreground/25">
         <Music2 size={28} strokeWidth={1.2} />
         <span className="text-sm">No audio files found</span>
       </div>
@@ -150,20 +150,20 @@ export function TrackList({
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     onKeyDown={(e) => handleKeyDown(e, track.id)}
-                    className="flex-1 bg-white/6 text-white/85 text-sm rounded-lg px-2.5 py-1.5
+                    className="flex-1 bg-foreground/6 text-foreground/85 text-sm rounded-lg px-2.5 py-1.5
                       outline-none focus:ring-1 focus:ring-white/20 font-[Outfit] min-w-0"
                     data-testid={`input-rename-track-${track.id}`}
                   />
                   <button
                     onClick={() => commitEdit(track.id)}
-                    className="p-1.5 text-white/50 transition-colors shrink-0"
+                    className="p-1.5 text-foreground/50 transition-colors shrink-0"
                     data-testid={`button-rename-confirm-${track.id}`}
                   >
                     <Check size={14} />
                   </button>
                   <button
                     onClick={cancelEdit}
-                    className="p-1.5 text-white/30 transition-colors shrink-0"
+                    className="p-1.5 text-foreground/30 transition-colors shrink-0"
                     data-testid={`button-rename-cancel-${track.id}`}
                   >
                     <X size={14} />
@@ -174,14 +174,14 @@ export function TrackList({
                 <div
                   className={`flex items-center transition-all duration-100 ${
                     isDraggingThis
-                      ? "opacity-40 bg-white/5"
+                      ? "opacity-40 bg-foreground/5"
                       : "opacity-100"
                   }`}
                 >
                   {/* Grip handle — only in manage mode */}
                   {isManageMode && (
                     <div
-                      className="pl-3 pr-2 py-4 text-white/20 shrink-0 select-none"
+                      className="pl-3 pr-2 py-4 text-foreground/20 shrink-0 select-none"
                       style={{ touchAction: "none", cursor: isDragging ? "grabbing" : "grab" }}
                       onPointerDown={(e) => handleGripPointerDown(e, displayIndex)}
                       onPointerMove={handleGripPointerMove}
@@ -200,7 +200,7 @@ export function TrackList({
                     }}
                     data-testid={`track-item-${track.id}`}
                     className={`flex-1 flex items-center gap-3 py-3.5 text-left min-w-0
-                      ${isManageMode ? "pl-1 pr-2 cursor-default" : "px-4 transition-colors active:bg-white/5"}
+                      ${isManageMode ? "pl-1 pr-2 cursor-default" : "px-4 transition-colors active:bg-foreground/5"}
                       ${isActive && !isManageMode ? "bg-white/[0.06]" : ""}
                     `}
                   >
@@ -210,7 +210,7 @@ export function TrackList({
                         {isActive && isPlaying ? (
                           <PlayingIndicator />
                         ) : (
-                          <span className={`text-xs tabular-nums ${isActive ? "text-white/60" : "text-white/18"}`}>
+                          <span className={`text-xs tabular-nums ${isActive ? "text-foreground/60" : "text-foreground/18"}`}>
                             {String(originalIndex + 1).padStart(2, "0")}
                           </span>
                         )}
@@ -226,7 +226,7 @@ export function TrackList({
                         const end = showMiddle ? displayName.slice(-keepEnd) : "";
                         return (
                           <div className={`text-sm ellipsize-middle font-[Outfit] leading-snug ${
-                            isActive && !isManageMode ? "text-white" : "text-white/65"
+                            isActive && !isManageMode ? "text-white" : "text-foreground/65"
                           }`}>
                             <span className="em-start">{start}</span>
                             {end && <span className="em-end">{end}</span>}
@@ -240,7 +240,7 @@ export function TrackList({
                   {isManageMode && (
                     <button
                       onClick={() => startEdit(track)}
-                      className="p-3 text-white/20 active:text-white/65 transition-colors shrink-0"
+                      className="p-3 text-foreground/20 active:text-foreground/65 transition-colors shrink-0"
                       data-testid={`button-rename-track-${track.id}`}
                     >
                       <Pencil size={13} />
@@ -263,7 +263,7 @@ function PlayingIndicator() {
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="w-[3px] rounded-full bg-white/70"
+          className="w-[3px] rounded-full bg-foreground/70"
           style={{
             height: "100%",
             animation: `bounce-bar 0.9s ease-in-out ${i * 0.15}s infinite alternate`,

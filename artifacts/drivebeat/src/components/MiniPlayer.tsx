@@ -192,7 +192,7 @@ export function MiniPlayer({
               >
                 <button
                   onClick={controls.shufflePlay}
-                  className="w-full h-[52px] flex items-center justify-center gap-2 rounded-xl bg-white/6 text-white/60 text-sm font-medium active:bg-white/10 transition-colors"
+                  className="w-full h-[52px] flex items-center justify-center gap-2 rounded-xl bg-foreground/6 text-foreground/60 text-sm font-medium active:bg-foreground/10 transition-colors"
                 >
                   <Shuffle size={15} />
                   Shuffle Play
@@ -214,30 +214,30 @@ export function MiniPlayer({
                 <div className="mb-3 px-4">
                   <MarqueeText
                     text={displayName}
-                    className="text-white/80 text-sm font-medium text-center leading-snug"
+                    className="text-foreground/80 text-sm font-medium text-center leading-snug"
                   />
                 </div>
 
                 {/* Progress bar */}
                 <div className="flex items-center gap-3">
                   <span
-                    className="text-[11px] text-white/30 tabular-nums shrink-0 w-10 text-right"
+                    className="text-[11px] text-foreground/30 tabular-nums shrink-0 w-10 text-right"
                     data-testid="text-current-time"
                   >
                     {formatDuration(currentTime)}
                   </span>
                   <div
-                    className="flex-1 h-[5px] bg-white/8 cursor-pointer relative group rounded-full"
+                    className="flex-1 h-[5px] bg-foreground/8 cursor-pointer relative group rounded-full"
                     onClick={handleSeek}
                     data-testid="progress-bar"
                   >
                     <div
-                      className="h-full bg-white/70 rounded-full transition-none"
+                      className="h-full bg-foreground/70 rounded-full transition-none"
                       style={{ width: `${progress * 100}%` }}
                     />
                   </div>
                   <span
-                    className="text-[11px] text-white/30 tabular-nums shrink-0 w-10"
+                    className="text-[11px] text-foreground/30 tabular-nums shrink-0 w-10"
                     data-testid="text-duration"
                   >
                     {formatDuration(duration)}
@@ -262,8 +262,8 @@ export function MiniPlayer({
             data-testid="button-speed"
             className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
               showSpeed || playbackRate !== 1
-                ? "bg-white/12 text-white/80"
-                : "bg-transparent text-white/30"
+                ? "bg-foreground/12 text-foreground/80"
+                : "bg-transparent text-foreground/30"
             }`}
           >
             <CircleGauge size={18} />
@@ -274,7 +274,7 @@ export function MiniPlayer({
             <button
               onClick={() => controls.seekBy(-5)}
               data-testid="button-seek-back"
-              className="text-white/40 transition-colors p-1.5 rounded-lg"
+              className="text-foreground/40 transition-colors p-1.5 rounded-lg"
               title="Rewind 5 seconds"
             >
               <span className="flex items-center gap-0.5">
@@ -285,7 +285,7 @@ export function MiniPlayer({
             <button
               onClick={controls.prevTrack}
               data-testid="button-prev"
-              className="text-white/50 transition-colors p-1.5 rounded-lg"
+              className="text-foreground/50 transition-colors p-1.5 rounded-lg"
             >
               <SkipBack size={18} />
             </button>
@@ -313,7 +313,7 @@ export function MiniPlayer({
             <button
               onClick={controls.nextTrack}
               data-testid="button-next"
-              className="text-white/50 transition-colors p-1.5 rounded-lg"
+              className="text-foreground/50 transition-colors p-1.5 rounded-lg"
             >
               <SkipForward size={18} />
             </button>
@@ -321,7 +321,7 @@ export function MiniPlayer({
             <button
               onClick={() => controls.seekBy(5)}
               data-testid="button-seek-forward"
-              className="text-white/40 transition-colors p-1.5 rounded-lg"
+              className="text-foreground/40 transition-colors p-1.5 rounded-lg"
               title="Forward 5 seconds"
             >
               <span className="flex items-center gap-0.5">
@@ -342,8 +342,8 @@ export function MiniPlayer({
             data-testid="button-sleep"
             className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
               showSleep || isSleepActive
-                ? "bg-white/12 text-white/80"
-                : "bg-transparent text-white/30"
+                ? "bg-foreground/12 text-foreground/80"
+                : "bg-transparent text-foreground/30"
             }`}
           >
             <Timer size={18} />
@@ -368,14 +368,14 @@ function SpeedPanel({
         onClick={() =>
           onChange(Math.max(0.25, Number((playbackRate - SPEED_STEP).toFixed(2))))
         }
-        className="w-10 h-9 flex items-center justify-center rounded-lg bg-white/8 text-white/55 transition-colors shrink-0"
+        className="w-10 h-9 flex items-center justify-center rounded-lg bg-foreground/8 text-foreground/55 transition-colors shrink-0"
         data-testid="button-speed-minus"
       >
         <Minus size={16} />
       </button>
 
-      <div className="flex-1 h-9 bg-white/10 rounded-lg flex items-center justify-center">
-        <span className="text-white/90 text-base font-medium tabular-nums">
+      <div className="flex-1 h-9 bg-foreground/10 rounded-lg flex items-center justify-center">
+        <span className="text-foreground/90 text-base font-medium tabular-nums">
           {playbackRate.toFixed(2)}
         </span>
       </div>
@@ -384,7 +384,7 @@ function SpeedPanel({
         onClick={() =>
           onChange(Math.min(2, Number((playbackRate + SPEED_STEP).toFixed(2))))
         }
-        className="w-10 h-9 flex items-center justify-center rounded-lg bg-white/8 text-white/55 transition-colors shrink-0"
+        className="w-10 h-9 flex items-center justify-center rounded-lg bg-foreground/8 text-foreground/55 transition-colors shrink-0"
         data-testid="button-speed-plus"
       >
         <Plus size={16} />
@@ -393,7 +393,7 @@ function SpeedPanel({
       <button
         onClick={() => onChange(1)}
         data-testid="button-speed-reset"
-        className="h-9 px-2.5 rounded-lg text-sm font-medium transition-colors bg-white/8 text-white/55 shrink-0"
+        className="h-9 px-2.5 rounded-lg text-sm font-medium transition-colors bg-foreground/8 text-foreground/55 shrink-0"
       >
         Reset
       </button>
@@ -422,40 +422,40 @@ function SleepPanel({
   return (
     <div className="w-full flex items-center justify-center gap-3">
       {/* Minutes */}
-      <div className="flex items-center bg-white/8 rounded-lg h-9">
+      <div className="flex items-center bg-foreground/8 rounded-lg h-9">
         <button
           onClick={() => onAdjust(-60)}
-          className="w-8 h-9 flex items-center justify-center text-white/40 transition-colors"
+          className="w-8 h-9 flex items-center justify-center text-foreground/40 transition-colors"
         >
           <Minus size={12} />
         </button>
-        <div className="w-9 h-9 flex items-center justify-center bg-white/5 rounded-lg">
-          <span className="text-white/85 text-sm font-medium tabular-nums">{mins}</span>
+        <div className="w-9 h-9 flex items-center justify-center bg-foreground/5 rounded-lg">
+          <span className="text-foreground/85 text-sm font-medium tabular-nums">{mins}</span>
         </div>
         <button
           onClick={() => onAdjust(60)}
-          className="w-8 h-9 flex items-center justify-center text-white/40 transition-colors"
+          className="w-8 h-9 flex items-center justify-center text-foreground/40 transition-colors"
         >
           <Plus size={12} />
         </button>
       </div>
 
-      <span className="text-white/25 text-sm font-medium">:</span>
+      <span className="text-foreground/25 text-sm font-medium">:</span>
 
       {/* Seconds */}
-      <div className="flex items-center bg-white/8 rounded-lg h-9">
+      <div className="flex items-center bg-foreground/8 rounded-lg h-9">
         <button
           onClick={() => onAdjust(-1)}
-          className="w-8 h-9 flex items-center justify-center text-white/40 transition-colors"
+          className="w-8 h-9 flex items-center justify-center text-foreground/40 transition-colors"
         >
           <Minus size={12} />
         </button>
-        <div className="w-9 h-9 flex items-center justify-center bg-white/5 rounded-lg">
-          <span className="text-white/85 text-sm font-medium tabular-nums">{secs}</span>
+        <div className="w-9 h-9 flex items-center justify-center bg-foreground/5 rounded-lg">
+          <span className="text-foreground/85 text-sm font-medium tabular-nums">{secs}</span>
         </div>
         <button
           onClick={() => onAdjust(1)}
-          className="w-8 h-9 flex items-center justify-center text-white/40 transition-colors"
+          className="w-8 h-9 flex items-center justify-center text-foreground/40 transition-colors"
         >
           <Plus size={12} />
         </button>
@@ -463,7 +463,7 @@ function SleepPanel({
 
       <button
         onClick={onCancel}
-        className="h-9 px-3 rounded-lg text-xs font-medium transition-colors bg-white/10 text-white/70 shrink-0"
+        className="h-9 px-3 rounded-lg text-xs font-medium transition-colors bg-foreground/10 text-foreground/70 shrink-0"
       >
         Reset
       </button>

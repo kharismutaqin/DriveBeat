@@ -9,6 +9,7 @@ import {
   Menu,
   ChevronUp,
 } from "lucide-react";
+import { ThemeToggle } from "./components/ThemeToggle";
 import { FolderModal } from "./components/FolderModal";
 import { TrackList } from "./components/TrackList";
 import { MiniPlayer } from "./components/MiniPlayer";
@@ -352,20 +353,20 @@ export default function App() {
                   value={folderRenameValue}
                   onChange={(e) => setFolderRenameValue(e.target.value)}
                   onKeyDown={handleFolderRenameKey}
-                  className="flex-1 bg-white/6 text-white/85 text-sm font-medium rounded-lg px-2.5 py-1.5
+                  className="flex-1 bg-foreground/6 text-foreground/85 text-sm font-medium rounded-lg px-2.5 py-1.5
                     outline-none focus:ring-1 focus:ring-white/20 min-w-0"
                   data-testid="input-rename-folder"
                 />
                 <button
                   onClick={commitFolderRename}
-                  className="p-1.5 text-white/50 transition-colors shrink-0"
+                  className="p-1.5 text-foreground/50 transition-colors shrink-0"
                   data-testid="button-rename-folder-confirm"
                 >
                   <Check size={14} />
                 </button>
                 <button
                   onClick={cancelFolderRename}
-                  className="p-1.5 text-white/30 transition-colors shrink-0"
+                  className="p-1.5 text-foreground/30 transition-colors shrink-0"
                   data-testid="button-rename-folder-cancel"
                 >
                   <X size={14} />
@@ -376,7 +377,7 @@ export default function App() {
               <div className="flex-1 min-w-0 flex items-center gap-2">
                 {folders.length === 1 ? (
                   <h1
-                    className="text-white/75 text-sm font-medium truncate"
+                    className="text-foreground/75 text-sm font-medium truncate"
                     data-testid="text-folder-name"
                   >
                     {folderDisplayName}
@@ -386,13 +387,13 @@ export default function App() {
                     onClick={() => {
                       setShowFolderPicker(!showFolderPicker);
                     }}
-                    className="flex items-center gap-1.5 text-white/75 text-sm font-medium transition-colors min-w-0"
+                    className="flex items-center gap-1.5 text-foreground/75 text-sm font-medium transition-colors min-w-0"
                     data-testid="button-folder-picker"
                   >
                     <span className="truncate">{folderDisplayName}</span>
                     <ChevronDown
                       size={13}
-                      className={`shrink-0 text-white/30 transition-transform ${showFolderPicker ? "rotate-180" : ""}`}
+                      className={`shrink-0 text-foreground/30 transition-transform ${showFolderPicker ? "rotate-180" : ""}`}
                     />
                   </button>
                 )}
@@ -400,7 +401,7 @@ export default function App() {
                 {isManageMode && (
                   <button
                     onClick={startFolderRename}
-                    className="p-1 text-white/35 transition-colors rounded shrink-0"
+                    className="p-1 text-foreground/35 transition-colors rounded shrink-0"
                     data-testid="button-rename-folder"
                     title="Rename folder"
                   >
@@ -409,6 +410,9 @@ export default function App() {
                 )}
               </div>
             )}
+
+            {/* Theme toggle */}
+            <ThemeToggle />
 
             {/* Manage / Close button */}
             <button
@@ -422,8 +426,8 @@ export default function App() {
               data-testid="button-manage"
               className={`p-1.5 rounded-lg transition-colors shrink-0 ${
                 isManageMode
-                  ? "text-white/70 bg-white/10"
-                  : "text-white/30"
+                  ? "text-foreground/70 bg-foreground/10"
+                  : "text-foreground/30"
               }`}
               title={isManageMode ? "Done" : "Manage"}
             >
@@ -435,7 +439,7 @@ export default function App() {
           {isManageMode && (
             <div className="px-4 pb-3 popup-slide-up">
               <div
-                className={`flex items-center bg-white/6 rounded-xl pl-3 pr-1 h-10 min-w-0 transition-colors ${
+                className={`flex items-center bg-foreground/6 rounded-xl pl-3 pr-1 h-10 min-w-0 transition-colors ${
                   inlineStatus === "error"
                     ? "ring-1 ring-red-500/40"
                     : "focus-within:ring-1 focus-within:ring-white/20"
@@ -452,14 +456,14 @@ export default function App() {
                   onKeyDown={handleInlineKeyDown}
                   placeholder="Paste Drive folder link..."
                   disabled={inlineStatus === "loading"}
-                  className="flex-1 bg-transparent text-white/75 text-sm placeholder:text-white/25 outline-none min-w-0"
+                  className="flex-1 bg-transparent text-foreground/75 text-sm placeholder:text-foreground/25 outline-none min-w-0"
                   data-testid="input-inline-folder-link"
                 />
                 <button
                   onClick={handleInlineSubmit}
                   disabled={inlineStatus === "loading" || !inlineLink.trim()}
                   data-testid="button-inline-load-folder"
-                  className="h-8 w-8 flex items-center justify-center rounded-lg text-white/55
+                  className="h-8 w-8 flex items-center justify-center rounded-lg text-foreground/55
                     transition-colors
                     disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
                 >
@@ -487,8 +491,8 @@ export default function App() {
                   data-testid={`button-folder-${folder.id}`}
                   className={`flex-1 text-left px-4 py-3 text-sm transition-colors ${
                     index === activeFolderIndex
-                      ? "text-white/90"
-                      : "text-white/40"
+                      ? "text-foreground/90"
+                      : "text-foreground/40"
                   }`}
                 >
                   {displayName}
@@ -498,7 +502,7 @@ export default function App() {
                     <button
                       onClick={() => handleMoveFolderUp(index)}
                       disabled={index === 0}
-                      className="p-1.5 text-white/25 disabled:opacity-20 transition-colors"
+                      className="p-1.5 text-foreground/25 disabled:opacity-20 transition-colors"
                       data-testid={`button-folder-up-${folder.id}`}
                     >
                       <ChevronUp size={14} />
@@ -506,7 +510,7 @@ export default function App() {
                     <button
                       onClick={() => handleMoveFolderDown(index)}
                       disabled={index === folders.length - 1}
-                      className="p-1.5 text-white/25 disabled:opacity-20 transition-colors"
+                      className="p-1.5 text-foreground/25 disabled:opacity-20 transition-colors"
                       data-testid={`button-folder-down-${folder.id}`}
                     >
                       <ChevronUp size={14} className="rotate-180" />
