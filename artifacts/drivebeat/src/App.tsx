@@ -330,7 +330,7 @@ export default function App() {
   const hasNoFolders = folders.length === 0;
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
       {/* New user: full-screen folder modal */}
       {(hasNoFolders || showFolderModal) && (
         <FolderModal
@@ -342,7 +342,7 @@ export default function App() {
 
       {/* Header */}
       {!hasNoFolders && (
-        <header className="shrink-0 border-b border-white/[0.05]">
+        <header className="shrink-0 border-b border-border">
           {/* Main row: folder name + Manage toggle */}
           <div className="flex items-center gap-2 px-4 pt-4 pb-3">
             {isRenamingFolder ? (
@@ -481,7 +481,7 @@ export default function App() {
 
       {/* Folder picker dropdown */}
       {showFolderPicker && folders.length > 1 && (
-        <div className="shrink-0 border-b border-white/[0.05] bg-[#060606]">
+        <div className="shrink-0 border-b border-border bg-card">
           {folders.map((folder, index) => {
             const displayName = getFolderRename(folder.id) ?? folder.name;
             return (

@@ -201,7 +201,7 @@ export function TrackList({
                     data-testid={`track-item-${track.id}`}
                     className={`flex-1 flex items-center gap-3 py-3.5 text-left min-w-0
                       ${isManageMode ? "pl-1 pr-2 cursor-default" : "px-4 transition-colors active:bg-foreground/5"}
-                      ${isActive && !isManageMode ? "bg-white/[0.06]" : ""}
+                      ${isActive && !isManageMode ? "bg-foreground/[0.06]" : ""}
                     `}
                   >
                     {/* Number / playing indicator (normal mode only) */}
@@ -226,7 +226,7 @@ export function TrackList({
                         const end = showMiddle ? displayName.slice(-keepEnd) : "";
                         return (
                           <div className={`text-sm ellipsize-middle font-[Outfit] leading-snug ${
-                            isActive && !isManageMode ? "text-white" : "text-foreground/65"
+                            isActive && !isManageMode ? "text-foreground" : "text-foreground/65"
                           }`}>
                             <span className="em-start">{start}</span>
                             {end && <span className="em-end">{end}</span>}

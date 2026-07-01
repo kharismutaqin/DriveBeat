@@ -136,7 +136,7 @@ export function MiniPlayer({
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-40 bg-[#0d0d0d] border-t border-white/[0.07] safe-area-bottom"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border safe-area-bottom"
       data-testid="mini-player"
     >
       <div className="px-4 pt-3 pb-4">
