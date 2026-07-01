@@ -28,8 +28,8 @@ export function ThemeToggle() {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={`p-1.5 rounded-lg transition-colors shrink-0 ${
         isDark
-          ? "text-foreground/30 hover:text-foreground/70"
-          : "text-foreground/40 hover:text-foreground/70"
+          ? "text-foreground/70 hover:text-foreground"
+          : "text-foreground/60 hover:text-foreground"
       }`}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
       aria-label="Toggle theme"

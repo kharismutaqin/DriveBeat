@@ -221,7 +221,7 @@ export function MiniPlayer({
                 {/* Progress bar */}
                 <div className="flex items-center gap-3">
                   <span
-                    className="text-[11px] text-foreground/30 tabular-nums shrink-0 w-10 text-right"
+                    className="text-[11px] text-foreground/50 tabular-nums shrink-0 w-10 text-right"
                     data-testid="text-current-time"
                   >
                     {formatDuration(currentTime)}
@@ -237,7 +237,7 @@ export function MiniPlayer({
                     />
                   </div>
                   <span
-                    className="text-[11px] text-foreground/30 tabular-nums shrink-0 w-10"
+                    className="text-[11px] text-foreground/50 tabular-nums shrink-0 w-10"
                     data-testid="text-duration"
                   >
                     {formatDuration(duration)}
@@ -263,7 +263,7 @@ export function MiniPlayer({
             className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
               showSpeed || playbackRate !== 1
                 ? "bg-foreground/12 text-foreground/80"
-                : "bg-transparent text-foreground/30"
+                : "bg-transparent text-foreground/60"
             }`}
           >
             <CircleGauge size={18} />
@@ -274,7 +274,7 @@ export function MiniPlayer({
             <button
               onClick={() => controls.seekBy(-5)}
               data-testid="button-seek-back"
-              className="text-foreground/40 transition-colors p-1.5 rounded-lg"
+              className="text-foreground/60 transition-colors p-1.5 rounded-lg"
               title="Rewind 5 seconds"
             >
               <span className="flex items-center gap-0.5">
@@ -285,7 +285,7 @@ export function MiniPlayer({
             <button
               onClick={controls.prevTrack}
               data-testid="button-prev"
-              className="text-foreground/50 transition-colors p-1.5 rounded-lg"
+              className="text-foreground/60 transition-colors p-1.5 rounded-lg"
             >
               <SkipBack size={18} />
             </button>
@@ -313,7 +313,7 @@ export function MiniPlayer({
             <button
               onClick={controls.nextTrack}
               data-testid="button-next"
-              className="text-foreground/50 transition-colors p-1.5 rounded-lg"
+              className="text-foreground/60 transition-colors p-1.5 rounded-lg"
             >
               <SkipForward size={18} />
             </button>
@@ -321,7 +321,7 @@ export function MiniPlayer({
             <button
               onClick={() => controls.seekBy(5)}
               data-testid="button-seek-forward"
-              className="text-foreground/40 transition-colors p-1.5 rounded-lg"
+              className="text-foreground/60 transition-colors p-1.5 rounded-lg"
               title="Forward 5 seconds"
             >
               <span className="flex items-center gap-0.5">
@@ -343,7 +343,7 @@ export function MiniPlayer({
             className={`flex items-center justify-center w-9 h-9 rounded-lg text-xs transition-colors ${
               showSleep || isSleepActive
                 ? "bg-foreground/12 text-foreground/80"
-                : "bg-transparent text-foreground/30"
+                : "bg-transparent text-foreground/60"
             }`}
           >
             <Timer size={18} />
@@ -368,7 +368,7 @@ function SpeedPanel({
         onClick={() =>
           onChange(Math.max(0.25, Number((playbackRate - SPEED_STEP).toFixed(2))))
         }
-        className="w-10 h-9 flex items-center justify-center rounded-lg bg-foreground/8 text-foreground/55 transition-colors shrink-0"
+        className="w-10 h-9 flex items-center justify-center rounded-lg bg-foreground/8 text-foreground/70 transition-colors shrink-0"
         data-testid="button-speed-minus"
       >
         <Minus size={16} />
@@ -384,7 +384,7 @@ function SpeedPanel({
         onClick={() =>
           onChange(Math.min(2, Number((playbackRate + SPEED_STEP).toFixed(2))))
         }
-        className="w-10 h-9 flex items-center justify-center rounded-lg bg-foreground/8 text-foreground/55 transition-colors shrink-0"
+        className="w-10 h-9 flex items-center justify-center rounded-lg bg-foreground/8 text-foreground/70 transition-colors shrink-0"
         data-testid="button-speed-plus"
       >
         <Plus size={16} />
@@ -393,7 +393,7 @@ function SpeedPanel({
       <button
         onClick={() => onChange(1)}
         data-testid="button-speed-reset"
-        className="h-9 px-2.5 rounded-lg text-sm font-medium transition-colors bg-foreground/8 text-foreground/55 shrink-0"
+        className="h-9 px-2.5 rounded-lg text-sm font-medium transition-colors bg-foreground/8 text-foreground/70 shrink-0"
       >
         Reset
       </button>
@@ -425,7 +425,7 @@ function SleepPanel({
       <div className="flex items-center bg-foreground/8 rounded-lg h-9">
         <button
           onClick={() => onAdjust(-60)}
-          className="w-8 h-9 flex items-center justify-center text-foreground/40 transition-colors"
+          className="w-8 h-9 flex items-center justify-center text-foreground/60 transition-colors"
         >
           <Minus size={12} />
         </button>
@@ -434,19 +434,19 @@ function SleepPanel({
         </div>
         <button
           onClick={() => onAdjust(60)}
-          className="w-8 h-9 flex items-center justify-center text-foreground/40 transition-colors"
+          className="w-8 h-9 flex items-center justify-center text-foreground/60 transition-colors"
         >
           <Plus size={12} />
         </button>
       </div>
 
-      <span className="text-foreground/25 text-sm font-medium">:</span>
+      <span className="text-foreground/50 text-sm font-medium">:</span>
 
       {/* Seconds */}
       <div className="flex items-center bg-foreground/8 rounded-lg h-9">
         <button
           onClick={() => onAdjust(-1)}
-          className="w-8 h-9 flex items-center justify-center text-foreground/40 transition-colors"
+          className="w-8 h-9 flex items-center justify-center text-foreground/60 transition-colors"
         >
           <Minus size={12} />
         </button>
@@ -455,7 +455,7 @@ function SleepPanel({
         </div>
         <button
           onClick={() => onAdjust(1)}
-          className="w-8 h-9 flex items-center justify-center text-foreground/40 transition-colors"
+          className="w-8 h-9 flex items-center justify-center text-foreground/60 transition-colors"
         >
           <Plus size={12} />
         </button>

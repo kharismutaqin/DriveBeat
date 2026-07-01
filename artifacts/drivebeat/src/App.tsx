@@ -393,7 +393,7 @@ export default function App() {
                     <span className="truncate">{folderDisplayName}</span>
                     <ChevronDown
                       size={13}
-                      className={`shrink-0 text-foreground/30 transition-transform ${showFolderPicker ? "rotate-180" : ""}`}
+                      className={`shrink-0 text-foreground/60 transition-transform ${showFolderPicker ? "rotate-180" : ""}`}
                     />
                   </button>
                 )}
@@ -427,7 +427,7 @@ export default function App() {
               className={`p-1.5 rounded-lg transition-colors shrink-0 ${
                 isManageMode
                   ? "text-foreground/70 bg-foreground/10"
-                  : "text-foreground/30"
+                  : "text-foreground/60"
               }`}
               title={isManageMode ? "Done" : "Manage"}
             >
@@ -492,7 +492,7 @@ export default function App() {
                   className={`flex-1 text-left px-4 py-3 text-sm transition-colors ${
                     index === activeFolderIndex
                       ? "text-foreground/90"
-                      : "text-foreground/40"
+                      : "text-foreground/60"
                   }`}
                 >
                   {displayName}
@@ -502,7 +502,7 @@ export default function App() {
                     <button
                       onClick={() => handleMoveFolderUp(index)}
                       disabled={index === 0}
-                      className="p-1.5 text-foreground/25 disabled:opacity-20 transition-colors"
+                      className="p-1.5 text-foreground/50 disabled:opacity-20 transition-colors"
                       data-testid={`button-folder-up-${folder.id}`}
                     >
                       <ChevronUp size={14} />
@@ -510,7 +510,7 @@ export default function App() {
                     <button
                       onClick={() => handleMoveFolderDown(index)}
                       disabled={index === folders.length - 1}
-                      className="p-1.5 text-foreground/25 disabled:opacity-20 transition-colors"
+                      className="p-1.5 text-foreground/50 disabled:opacity-20 transition-colors"
                       data-testid={`button-folder-down-${folder.id}`}
                     >
                       <ChevronUp size={14} className="rotate-180" />
