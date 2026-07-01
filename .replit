@@ -11,6 +11,43 @@ env = { "CI" = "true" }
 [workflows]
 runButton = "Project"
 
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "API Server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "DriveBeat"
+
+[[workflows.workflow]]
+name = "API Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=8080 pnpm --filter @workspace/api-server run dev"
+waitForPort = 8080
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "DriveBeat"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=19432 BASE_PATH=/ pnpm --filter @workspace/drivebeat run dev"
+waitForPort = 19432
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
 [agent]
 stack = "PNPM_WORKSPACE"
 expertMode = true
@@ -21,3 +58,8 @@ timeoutMs = 20000
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.development]
+BASE_PATH = "/"
